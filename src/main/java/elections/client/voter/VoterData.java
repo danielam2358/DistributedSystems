@@ -1,7 +1,14 @@
 package elections.client.voter;
+
+
+import lombok.Data;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 
+@Data
 public class VoterData {
     private String id;
     private String name;

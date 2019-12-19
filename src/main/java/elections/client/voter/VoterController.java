@@ -1,16 +1,14 @@
 package elections.client.voter;
 
-
-
-
-import org.springframework.hateoas.EntityModel;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import static org.springframework.hateoas.server.reactive.WebFluxLinkBuilder.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 
 @RestController
@@ -18,7 +16,18 @@ public class VoterController {
     private HashMap<String, VoterData> voters = new HashMap<>();
 
     VoterController() {
+        VoterData voter_0 = new VoterData("123", "jhon", "WDC", "1");
+        VoterData voter_1 = new VoterData("321", "jhon", "WDC", "1");
+        voters.put(voter_0.getId(), voter_0);
+        voters.put(voter_1.getId(), voter_1);
     }
+
+
+    @GetMapping("/voters")
+    List<VoterData> all() {
+        return new ArrayList<>(voters.values());
+    }
+
 
     @PostMapping("/voters")
     VoterData newVoter(@RequestBody VoterData newVoter) {

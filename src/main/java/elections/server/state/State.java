@@ -2,19 +2,16 @@ package elections.server.state;
 
 import elections.client.voter.VoterController;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.rsocket.RSocketProperties;
-import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
 
-@SpringBootApplication
-
+@SpringBootApplication(exclude={DataSourceAutoConfiguration.class})
+@ComponentScan(basePackageClasses = VoterController.class)
 public class State {
 
     public static void main(String[] args) {
-        new SpringApplicationBuilder(RSocketProperties.Server.class)
-                .web(WebApplicationType.NONE)
-                .run(args);
+        SpringApplication.run(State.class, args);
     }
 }
 
