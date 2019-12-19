@@ -1,0 +1,18 @@
+syntax = "proto3";
+package server.state;
+
+message VoteRequest {
+    string id = 1;
+    string name = 2;
+    string state = 3;
+    string vote = 4;
+}
+
+message VoteReply {
+    bool status = 1;
+}
+
+// The ballot service definition
+service Ballot {
+    rpc Vote (VoteRequest) returns (VoteReply) {}
+}
