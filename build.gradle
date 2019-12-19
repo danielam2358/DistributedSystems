@@ -19,9 +19,7 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
     compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.3'
-    implementation 'org.springframework.boot:spring-web'
     implementation 'org.springframework.boot:spring-boot'
-    implementation 'org.springframework.boot:spring-core'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
