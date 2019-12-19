@@ -1,7 +1,9 @@
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '2.2.2.RELEASE'
     id 'io.freefair.lombok' version '3.8.4'
+    id 'com.google.protobuf' version '0.8.8'
 }
 
 group 'DS'
@@ -10,22 +12,81 @@ version '1.0'
 sourceCompatibility = 1.8
 
 apply plugin: 'java'
+apply plugin: 'idea'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'com.google.protobuf'
 
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
+
+
+def grpcVersion = '1.26.0'
+def protobufVersion = '3.8.0'
+def protocVersion = protobufVersion
+
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    // jackson
     compile 'com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.9.3'
+
+    // springframework
     implementation 'org.springframework.boot:spring-boot'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-hateoas'
     implementation 'org.springframework.hateoas:spring-hateoas'
+
+    // lombok
     compileOnly 'org.projectlombok:lombok:1.18.8'
     annotationProcessor 'org.projectlombok:lombok:1.18.8'
+
+    //gRPC
+    compile "io.grpc:grpc-all:${grpcVersion}"
+    implementation "io.grpc:grpc-protobuf:${grpcVersion}"
+    implementation "io.grpc:grpc-stub:${grpcVersion}"
+    implementation "io.grpc:grpc-netty:${grpcVersion}"
+    compileOnly "javax.annotation:javax.annotation-api:1.2"
+
+
 }
 
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${protocVersion}"
+    }
+    plugins {
+        grpc { artifact = "io.grpc:protoc-gen-grpc-java:${grpcVersion}" }
+    }
+    generateProtoTasks {
+        all()*.plugins { grpc {} }
+    }
+
+}
+
+sourceSets {
+    main {
+        proto {
+            // In addition to the default "src/main/proto"
+            srcDir "proto"
+            srcDir "src/main/grpc"
+        }
+
+        java {
+            srcDirs 'build/generated/source/proto/main/grpc'
+            srcDirs 'build/generated/source/proto/main/java'
+        }
+    }
+}
+
+
+idea {
+    module {
+        sourceDirs += file("${projectDir}/src/generated/main/java");
+        sourceDirs += file("${projectDir}/src/generated/main/grpc");
+    }
+}

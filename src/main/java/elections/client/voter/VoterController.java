@@ -16,6 +16,8 @@ public class VoterController {
     private HashMap<String, VoterData> voters = new HashMap<>();
 
     VoterController() {
+
+        // TODO: delete
         VoterData voter_0 = new VoterData("123", "jhon", "WDC", "1");
         VoterData voter_1 = new VoterData("321", "jhon", "WDC", "1");
         voters.put(voter_0.getId(), voter_0);
