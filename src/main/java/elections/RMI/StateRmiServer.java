@@ -5,6 +5,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 //TODO: finish
@@ -26,7 +28,11 @@ class StateRmiServer extends UnicastRemoteObject  implements CommitteeStateRmiIn
     @Override
     public List<String> getElectionStatus() throws RemoteException {
         System.out.println("getElectionStatus");
-        return null;
+        ArrayList<String> a = new ArrayList<String>();
+        a.add("a");
+        a.add("b");
+        a.add("c");
+        return a;
     }
 
 

@@ -52,6 +52,9 @@ dependencies {
     implementation "io.grpc:grpc-netty:${grpcVersion}"
     compileOnly "javax.annotation:javax.annotation-api:1.2"
 
+    //Zookeeper
+    compile 'org.apache.zookeeper:zookeeper:3.4.14'
+
 
 }
 

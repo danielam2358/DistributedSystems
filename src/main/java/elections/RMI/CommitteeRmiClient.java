@@ -21,6 +21,8 @@ class CommitteeRmiServer{
         Registry registry = LocateRegistry.getRegistry(1888);
         CommitteeStateRmiInterface lookup = (CommitteeStateRmiInterface) registry.lookup(name);
         lookup.startElection();
+        lookup.stopElection();
+        System.out.println(lookup.getElectionStatus());
 
     }
 }
