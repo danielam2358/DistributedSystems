@@ -1,4 +1,4 @@
-package elections.client.voter;
+package elections.REST;
 
 
 import lombok.Data;

@@ -1,4 +1,4 @@
-package elections.client.voter;
+package elections.REST;
 
 import java.util.ArrayList;
 import java.util.HashMap;

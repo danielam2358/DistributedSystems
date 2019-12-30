@@ -1,4 +1,4 @@
-package elections.server.state;
+package elections.gRPC;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;

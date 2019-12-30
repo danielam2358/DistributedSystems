@@ -114,10 +114,9 @@ public class StateZookeeper implements Runnable{
     public static void main(String[] args) throws IOException, InterruptedException {
         StateZookeeper s = new StateZookeeper("127.0.0.1:2181", 50000);
         s.run();
-        while (true){
-            System.out.println(".");
-            TimeUnit.SECONDS.sleep(1);
-        }
+//        while (true){
+//            TimeUnit.SECONDS.sleep(1);
+//        }
 
     }
 
