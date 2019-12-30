@@ -22,7 +22,7 @@ public class ZooKeeperWrapper {
         try {
 
             // find out if the node already exist.
-            final Stat nodeStat =  zooKeeper.exists(node, false);
+            final Stat nodeStat =  zooKeeper.exists(node, watch);
 
             // if the node not exist - create.
             if(nodeStat == null) {
@@ -47,6 +47,14 @@ public class ZooKeeperWrapper {
         }
 
         return childNodes;
+    }
+
+    public void watchNode(final String node) {
+        try {
+            this.zooKeeper.exists(node, true);
+        } catch (KeeperException | InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
 

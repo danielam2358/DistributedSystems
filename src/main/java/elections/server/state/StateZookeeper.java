@@ -12,6 +12,7 @@ import org.apache.zookeeper.Watcher;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class StateZookeeper implements Runnable{
 
@@ -58,12 +59,13 @@ public class StateZookeeper implements Runnable{
 
     private void createServerNode(){
         final String node = LEADER_ELECTION_NODE;
-        final boolean watch = true;
+        final boolean watch = false;
         final CreateMode createdMode = CreateMode.EPHEMERAL_SEQUENTIAL;
-        this.createdServerNode = this.zooKeeperWrapper.createNode(node, watch, createdMode).replace(STATE_NODE + "/", "");
+        this.createdServerNode = this.zooKeeperWrapper.createNode(node, watch, createdMode);
     }
 
     private void startLeaderElection(){
+        createServerNode();
 
         // get all LEADER_ELECTION_NODE child nodes
         final List<String> childNodePaths = this.zooKeeperWrapper.getChildren(STATE_NODE);
@@ -72,14 +74,15 @@ public class StateZookeeper implements Runnable{
         // sort by name
         Collections.sort(childNodePaths);
 
-        // find out what is th index of my server in the nodes.
-        int index = childNodePaths.indexOf(createdServerNode);
-
         // update createdLeaderNode
         createdLeaderNodePath = STATE_NODE + "/" + childNodePaths.get(0);
 
         // am i a leader?
-        this.amiLeader = index == 0;
+        this.amiLeader = createdLeaderNodePath.equals(createdServerNode);
+
+        // watch on leader node
+        // TODO: add if?
+        this.zooKeeperWrapper.watchNode(createdLeaderNodePath);
 
     }
 
@@ -104,15 +107,18 @@ public class StateZookeeper implements Runnable{
     public void run() {
         createRootNode();
         createStateNode();
-        createServerNode();
         startLeaderElection();
     }
 
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        StateZookeeper s = new StateZookeeper("127.0.0.1:2181", 5000);
+        StateZookeeper s = new StateZookeeper("127.0.0.1:2181", 50000);
         s.run();
-//        System.out.println("RESULT:" + s.amiLeader);
+        while (true){
+            System.out.println(".");
+            TimeUnit.SECONDS.sleep(1);
+        }
+
     }
 
 }
