@@ -1,7 +1,8 @@
-package elections.server;
+package elections.zookeeper;
 
 import org.apache.zookeeper.*;
 import org.apache.zookeeper.data.Stat;
+import org.springframework.util.SerializationUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -35,6 +36,17 @@ public class ZooKeeperWrapper {
 
         return createdNode;
     }
+
+    public void setAddress(String node, String address) throws KeeperException, InterruptedException {
+        byte[] data = SerializationUtils.serialize(address);
+        this.zooKeeper.setData(node, data, -1);
+    }
+
+    public String getAddress(String node) throws KeeperException, InterruptedException {
+        byte[] data = this.zooKeeper.getData(node, false, null);
+        return (String) SerializationUtils.deserialize(data);
+    }
+
 
     public List<String> getChildren(final String node) {
 

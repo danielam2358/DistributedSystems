@@ -13,10 +13,7 @@ class CommitteeRmiServer{
 
     // TODO: after test rename main to startClient or something.
     public static void main(String[] args) throws RemoteException, NotBoundException {
-//        if (System.getSecurityManager() == null) {
-//            System.setSecurityManager(new SecurityManager());
-//        }
-//
+
         String name = "hello";
         Registry registry = LocateRegistry.getRegistry(1888);
         CommitteeStateRmiInterface lookup = (CommitteeStateRmiInterface) registry.lookup(name);

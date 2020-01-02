@@ -11,9 +11,15 @@ import java.util.List;
 
 //TODO: finish
 
-class StateRmiServer extends UnicastRemoteObject  implements CommitteeStateRmiInterface{
+public class StateRmiServer extends UnicastRemoteObject  implements CommitteeStateRmiInterface{
 
-    public StateRmiServer() throws RemoteException { super(); }
+    public StateRmiServer(String rmiPort) throws RemoteException {
+        super();
+
+        String name = "StateRmiServer";
+        Registry registry = LocateRegistry.createRegistry(Integer.parseInt(rmiPort));
+        registry.rebind(name, this);
+    }
 
     @Override
     public void startElection() throws RemoteException {
@@ -38,27 +44,27 @@ class StateRmiServer extends UnicastRemoteObject  implements CommitteeStateRmiIn
 
 
     // TODO: after test rename main to startServer or something.
-    public static void main(String[] args){
-        try {
+    public static void main(String[] args) {
+//        try {
 //            Registry rgsty = LocateRegistry.createRegistry(1888);
 
-            String name = "StateRmiServer";
-            StateRmiServer server = new StateRmiServer();
+        String name = "StateRmiServer";
+//            StateRmiServer server = new StateRmiServer();
 //            StateRmiServer stub = (StateRmiServer) UnicastRemoteObject.exportObject(server, 1888);
 //            Registry registry = LocateRegistry.getRegistry();
 //            registry.rebind(name, stub);
 //            Naming.rebind(name, server);
-
-            Registry rgsty = LocateRegistry.createRegistry(1888);
-            rgsty.rebind("hello", server);
-            System.out.println("Server ready");
-
-        } catch (Exception e) {
-
-            System.out.println("Server exception: " + e.toString());
-            e.printStackTrace();
-
-        }
+//
+//            Registry rgsty = LocateRegistry.createRegistry(1888);
+//            rgsty.rebind("hello", server);
+//            System.out.println("Server ready");
+//
+//        } catch (Exception e) {
+//
+//            System.out.println("Server exception: " + e.toString());
+//            e.printStackTrace();
+//
+//        }
 
     }
 }

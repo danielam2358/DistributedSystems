@@ -1,11 +1,7 @@
-package elections.server.state;
+package elections.zookeeper;
 
-
-
-
-import elections.server.ZooKeeperWrapper;
-import jdk.nashorn.internal.objects.annotations.Property;
 import org.apache.zookeeper.CreateMode;
+import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 
@@ -32,6 +28,10 @@ public class StateZookeeper implements Runnable{
 
     // hold current path to leader node in leader elections
     private String createdLeaderNodePath;
+
+    // hold the address of state server
+    private String myAddress = "127.0.0.0.0.0.0";
+    private String leaderAddress;
 
 
     // instantiate StateZookeeper class with uniq connectString
@@ -62,10 +62,18 @@ public class StateZookeeper implements Runnable{
         final boolean watch = false;
         final CreateMode createdMode = CreateMode.EPHEMERAL_SEQUENTIAL;
         this.createdServerNode = this.zooKeeperWrapper.createNode(node, watch, createdMode);
+
     }
+
+
 
     private void startLeaderElection(){
         createServerNode();
+        try {
+            this.zooKeeperWrapper.setAddress(createdServerNode, myAddress);
+        } catch (KeeperException | InterruptedException e) {
+            e.printStackTrace();
+        }
 
         // get all LEADER_ELECTION_NODE child nodes
         final List<String> childNodePaths = this.zooKeeperWrapper.getChildren(STATE_NODE);
@@ -83,6 +91,12 @@ public class StateZookeeper implements Runnable{
         // watch on leader node
         // TODO: add if?
         this.zooKeeperWrapper.watchNode(createdLeaderNodePath);
+
+        try {
+            leaderAddress = this.zooKeeperWrapper.getAddress(createdLeaderNodePath);
+        } catch (KeeperException | InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 
@@ -114,9 +128,9 @@ public class StateZookeeper implements Runnable{
     public static void main(String[] args) throws IOException, InterruptedException {
         StateZookeeper s = new StateZookeeper("127.0.0.1:2181", 50000);
         s.run();
-//        while (true){
-//            TimeUnit.SECONDS.sleep(1);
-//        }
+        while (true){
+            TimeUnit.SECONDS.sleep(1);
+        }
 
     }
 
