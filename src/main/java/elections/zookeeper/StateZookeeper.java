@@ -8,15 +8,15 @@ import org.apache.zookeeper.Watcher;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 public class StateZookeeper implements Runnable{
 
 
     private static final String ROOT_NODE = "/election";
-    private static final String STATE_NODE = ROOT_NODE + "/NY"; // TODO: how to pass?
-    private static final String LEADER_ELECTION_NODE_SUFFIX = "/state_number_";
-    private static final String LEADER_ELECTION_NODE = STATE_NODE + LEADER_ELECTION_NODE_SUFFIX;
+    private final static String LEADER_ELECTION_NODE_SUFFIX = "/state_number_";
+
+    private final String stateNode;
+    private final String leaderElectionNode;
 
     private ZooKeeperWrapper zooKeeperWrapper;
 
@@ -30,12 +30,15 @@ public class StateZookeeper implements Runnable{
     private String createdLeaderNodePath;
 
     // hold the address of state server
-    private String myAddress = "127.0.0.0.0.0.0";
+    private String myAddress;
     private String leaderAddress;
 
 
     // instantiate StateZookeeper class with uniq connectString
-    public StateZookeeper(String connectString, int sessionTimeout) throws IOException {
+    public StateZookeeper(String stateStr, String address, String connectString, int sessionTimeout) throws IOException {
+        stateNode = ROOT_NODE + "/" + stateStr;
+        leaderElectionNode = stateNode + LEADER_ELECTION_NODE_SUFFIX;
+        this.myAddress = address;
         this.zooKeeperWrapper = new ZooKeeperWrapper(connectString, sessionTimeout, new NodeDeleteWatcher());
     }
 
@@ -51,14 +54,14 @@ public class StateZookeeper implements Runnable{
     }
 
     private void createStateNode(){
-        final String node = STATE_NODE;
+        final String node = stateNode;
         final boolean watch = false;
         final CreateMode createdMode = CreateMode.PERSISTENT;
         this.zooKeeperWrapper.createNode(node, watch, createdMode);
     }
 
     private void createServerNode(){
-        final String node = LEADER_ELECTION_NODE;
+        final String node = leaderElectionNode;
         final boolean watch = false;
         final CreateMode createdMode = CreateMode.EPHEMERAL_SEQUENTIAL;
         this.createdServerNode = this.zooKeeperWrapper.createNode(node, watch, createdMode);
@@ -76,14 +79,14 @@ public class StateZookeeper implements Runnable{
         }
 
         // get all LEADER_ELECTION_NODE child nodes
-        final List<String> childNodePaths = this.zooKeeperWrapper.getChildren(STATE_NODE);
+        final List<String> childNodePaths = this.zooKeeperWrapper.getChildren(stateNode);
         System.out.println(childNodePaths);
 
         // sort by name
         Collections.sort(childNodePaths);
 
         // update createdLeaderNode
-        createdLeaderNodePath = STATE_NODE + "/" + childNodePaths.get(0);
+        createdLeaderNodePath = stateNode + "/" + childNodePaths.get(0);
 
         // am i a leader?
         this.amiLeader = createdLeaderNodePath.equals(createdServerNode);
@@ -125,14 +128,14 @@ public class StateZookeeper implements Runnable{
     }
 
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        StateZookeeper s = new StateZookeeper("127.0.0.1:2181", 50000);
-        s.run();
-        while (true){
-            TimeUnit.SECONDS.sleep(1);
-        }
-
-    }
+//    public static void main(String[] args) throws IOException, InterruptedException {
+//        StateZookeeper s = new StateZookeeper("127.0.0.1:2181", 50000);
+//        s.run();
+////        while (true){
+////            TimeUnit.SECONDS.sleep(1);
+////        }
+//
+//    }
 
 }
 

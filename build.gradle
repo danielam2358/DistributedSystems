@@ -55,6 +55,8 @@ dependencies {
     //Zookeeper
     compile 'org.apache.zookeeper:zookeeper:3.4.14'
 
+    //or.json
+    compile 'org.json:json:20171018'
 
 }
 

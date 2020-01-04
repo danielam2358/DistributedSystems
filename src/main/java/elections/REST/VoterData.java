@@ -10,6 +10,7 @@ import javax.persistence.Id;
 
 @Data
 public class VoterData {
+
     private String id;
     private String name;
     private String state;

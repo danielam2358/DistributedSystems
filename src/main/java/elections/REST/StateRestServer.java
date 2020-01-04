@@ -34,7 +34,7 @@ public class StateRestServer {
 
     }
 
-   static void start(String restPort, OnVoteCallback callback){
+   public void start(String restPort, OnVoteCallback callback){
         HashMap<String, Object> props = new HashMap<>();
         props.put("server.port", Integer.parseInt(restPort));
 
@@ -48,8 +48,5 @@ public class StateRestServer {
        handler.init(callback);
     }
 
-    public static void main(String[] args) {
-        start("9999" , (voter)->{});
-    }
 }
 
