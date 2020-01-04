@@ -26,7 +26,7 @@ public class StateGrpcClient {
     }
 
     /** Construct client for accessing HelloWorld server using the existing channel. */
-    StateGrpcClient(ManagedChannel channel) {
+    public StateGrpcClient(ManagedChannel channel) {
         this.channel = channel;
         blockingStub = BallotGrpc.newBlockingStub(channel);
     }

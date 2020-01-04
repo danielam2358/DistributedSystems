@@ -11,6 +11,11 @@ import java.util.List;
 
 public class StateZookeeper implements Runnable{
 
+    private OnLeaderElectionCallback onLeaderElectionCallback;
+
+    public interface OnLeaderElectionCallback {
+        void updateLeaderAddress(String leaderAddress);
+    }
 
     private static final String ROOT_NODE = "/election";
     private final static String LEADER_ELECTION_NODE_SUFFIX = "/state_number_";
@@ -35,10 +40,12 @@ public class StateZookeeper implements Runnable{
 
 
     // instantiate StateZookeeper class with uniq connectString
-    public StateZookeeper(String stateStr, String address, String connectString, int sessionTimeout) throws IOException {
+    public StateZookeeper(String stateStr, String address, String connectString, int sessionTimeout,
+                          OnLeaderElectionCallback onLeaderElectionCallback) throws IOException {
         stateNode = ROOT_NODE + "/" + stateStr;
         leaderElectionNode = stateNode + LEADER_ELECTION_NODE_SUFFIX;
         this.myAddress = address;
+        this.onLeaderElectionCallback = onLeaderElectionCallback;
         this.zooKeeperWrapper = new ZooKeeperWrapper(connectString, sessionTimeout, new NodeDeleteWatcher());
     }
 
@@ -101,6 +108,7 @@ public class StateZookeeper implements Runnable{
             e.printStackTrace();
         }
 
+        onLeaderElectionCallback.updateLeaderAddress(leaderAddress);
     }
 
     // this class implement Watcher of delete node event: this means that a state server failed.

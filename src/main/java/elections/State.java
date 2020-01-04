@@ -1,7 +1,6 @@
 package elections;
 
 import elections.REST.StateRestServer;
-import elections.REST.VoterData;
 import elections.RMI.StateRmiServer;
 import elections.gRPC.StateGrpcClient;
 import elections.gRPC.StateGrpcServer;
@@ -9,9 +8,11 @@ import elections.zookeeper.StateZookeeper;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
-import org.json.*;
 
 public class State {
+
+        private static final String ZK_SERVER_ADDRESS = "127.0.0.1:2181";
+        private static final int ZK_SESSION_TIMEOUT = 50000;
 
         private final String stateStr;
 
@@ -23,7 +24,10 @@ public class State {
         private StateRestServer stateRestServer;
 
         // onVote callback injection.
-        private StateRestServer.OnVoteCallback callback;
+        private StateRestServer.OnVoteCallback onVote;
+
+        // onLeaderElection callback injection.
+        private StateZookeeper.OnLeaderElectionCallback onLeaderElection;
 
         // services objects.
         private StateRmiServer stateRmiServer;
@@ -31,7 +35,7 @@ public class State {
         private StateGrpcServer stateGrpcServer;
         private StateGrpcClient stateGrpcClient;
 
-        public State(String stateStr, String zkPort, String rmiPort, String restPort, String grpcPort) throws IOException {
+        public State(String stateStr, String zkPort, String rmiPort, String restPort, String grpcPort) throws IOException, InterruptedException {
 
                 this.stateStr = stateStr;
 
@@ -40,22 +44,47 @@ public class State {
                 this.restPort = restPort;
                 this.grpcPort = grpcPort;
 
-                callback = (voter) -> {
-                        System.out.println("hello" + voter.getName());
-                };
+
+                startStateGrpcServer();
+
+                startStateGrpcClient();
+
+                startStateZookeeper();
+
+                startStateRmiServer();
 
                 startStateRestServer();
-                startStateRmiServer();
-                startStateZookeeper();
 
         }
 
 
 
-        private void startStateRestServer(){
-                // init Rest Server
-                this.stateRestServer = new StateRestServer();
-                stateRestServer.start(restPort, callback);
+        private void startStateGrpcServer() throws IOException, InterruptedException {
+                // init State gRPC server.
+                this.stateGrpcServer = new StateGrpcServer();
+                stateGrpcServer.start(grpcPort);
+                stateGrpcServer.blockUntilShutdown();
+        }
+
+        private void startStateGrpcClient() throws IOException {
+                onLeaderElection = (leaderAddress) -> {
+                        int port = Integer.parseInt(leaderAddress);
+                        this.stateGrpcClient = new StateGrpcClient("127.0.0.1", port);
+                };
+
+        }
+
+
+        private void startStateZookeeper() throws IOException {
+
+                // init State Zookeeper server
+                this.stateZookeeper = new StateZookeeper(
+                        this.stateStr,
+                        grpcPort,
+                        ZK_SERVER_ADDRESS,
+                        ZK_SESSION_TIMEOUT,
+                        onLeaderElection);
+                stateZookeeper.run();
         }
 
         private void startStateRmiServer() throws RemoteException {
@@ -63,31 +92,18 @@ public class State {
                 this.stateRmiServer = new StateRmiServer(rmiPort);
         }
 
-        private void startStateZookeeper() throws IOException {
-
-                String stateStr = this.stateStr;
-                String address = "BAnana";
-                String zkServerAddress = "127.0.0.1:2181";
-                int sessionTimeout = 50000;
-
-                // init State Zookeeper server
-                this.stateZookeeper = new StateZookeeper(stateStr, address, zkServerAddress, sessionTimeout);
-                stateZookeeper.run();
-        }
-
-        private void startStateGrpcServer() throws IOException {
-                // init State gRPC server.
-                this.stateGrpcServer = new StateGrpcServer();
-        }
-
-        private void startState() throws IOException {
-                // init State gRPC client.
-                //TODO
-//                this.stateGrpcClient = new StateGrpcClient();
+        private void startStateRestServer(){
+                // init Rest Server
+                // TODO
+                onVote = (voter) -> {
+                        System.out.println("hello" + voter.getName());
+                };
+                this.stateRestServer = new StateRestServer();
+                stateRestServer.start(restPort, onVote);
         }
 
 
-        public static void main(String[] args) throws IOException {
+        public static void main(String[] args) throws IOException, InterruptedException {
                 String stateStr = "NY";
                 String zkPort = "2181";
                 String rmiPort = "8991";

@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public class StateGrpcServer {
+
     private static final Logger logger = Logger.getLogger(StateGrpcServer.class.getName());
     private Server server;
 
@@ -29,7 +30,9 @@ public class StateGrpcServer {
 
 
 
-    private void start(int port) throws IOException {
+    public void start(String grpcPort) throws IOException {
+
+        int port = Integer.parseInt(grpcPort);
 
         server = ServerBuilder.forPort(port)
                 .addService(new BallotImpl())
@@ -53,7 +56,7 @@ public class StateGrpcServer {
         });
     }
 
-    private void stop() throws InterruptedException {
+    public void stop() throws InterruptedException {
         if (server != null) {
             server.shutdown().awaitTermination(30, TimeUnit.SECONDS);
         }
@@ -62,20 +65,20 @@ public class StateGrpcServer {
     /**
      * Await termination on the main thread since the grpc library uses daemon threads.
      */
-    private void blockUntilShutdown() throws InterruptedException {
+    public void blockUntilShutdown() throws InterruptedException {
         if (server != null) {
             server.awaitTermination();
         }
     }
 
-    /**
-     * Main launches the server from the command line.
-     */
-    public static void main(String[] args) throws IOException, InterruptedException {
-        final  StateGrpcServer server = new StateGrpcServer();
-        int port = 50051;  // TODO: how should i find port?
-        server.start(port);
-        server.blockUntilShutdown();
-    }
+//    /**
+//     * Main launches the server from the command line.
+//     */
+//    public static void main(String[] args) throws IOException, InterruptedException {
+//        final  StateGrpcServer server = new StateGrpcServer();
+//        int port = 50051;  // TODO: how should i find port?
+//        server.start(port);
+//        server.blockUntilShutdown();
+//    }
 
 }
