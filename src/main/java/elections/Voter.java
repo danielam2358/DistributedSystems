@@ -12,15 +12,13 @@ import java.net.URISyntaxException;
 
 public class Voter {
 
-    public static void Vote() throws URISyntaxException {
-        RestTemplate restTemplate = new RestTemplate();
-        final String baseUrl = "http://127.0.0.1:8992/voters"; // TODO
-        URI uri = new URI(baseUrl);
+    public static void Vote(String port, String id, String name, String state, String vote) throws URISyntaxException {
 
-        String id = "10";
-        String name = "LoganEvelyn";
-        String state = "NY";
-        String vote = "59";
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        final String baseUrl = "http://127.0.0.1:" + port + "/voters";
+        URI uri = new URI(baseUrl);
         
         VoterData voteData = new VoterData(id, name, state, vote);
 
@@ -37,6 +35,12 @@ public class Voter {
     }
 
     public static void main(String[] args) throws URISyntaxException {
-        Vote();
+        String port = "";
+        String id = "";
+        String name = "";
+        String state = "";
+        String vote =  "";
+
+        Vote(port, id, name, state, vote);
     }
 }

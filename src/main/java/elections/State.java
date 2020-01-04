@@ -21,15 +21,19 @@ public class State {
         private final String restPort;
         private final String grpcPort;
 
-        private StateRestServer stateRestServer;
-
         // onVote callback injection.
         private StateRestServer.OnVoteCallback onVote;
 
         // onLeaderElection callback injection.
         private StateZookeeper.OnLeaderElectionCallback onLeaderElection;
 
+        // rmi state server callback injection.
+        private StateRmiServer.OnStartElectionCallback onStartElection;
+        private StateRmiServer.OnStopElectionCallback onStopElection;
+        private StateRmiServer.OnReportElectionCallback onReportElectionCallback;
+
         // services objects.
+        private StateRestServer stateRestServer;
         private StateRmiServer stateRmiServer;
         private StateZookeeper stateZookeeper;
         private StateGrpcServer stateGrpcServer;
@@ -88,8 +92,11 @@ public class State {
         }
 
         private void startStateRmiServer() throws RemoteException {
+
+                //TODO: implement onStartElection, onStopElection, onReportElectionCallback
+
                 // init RMI server
-                this.stateRmiServer = new StateRmiServer(rmiPort);
+                this.stateRmiServer = new StateRmiServer(rmiPort, onStartElection, onStopElection, onReportElectionCallback);
         }
 
         private void startStateRestServer(){

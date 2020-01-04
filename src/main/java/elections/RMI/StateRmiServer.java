@@ -1,20 +1,47 @@
 package elections.RMI;
 
-import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
-import java.util.Collections;
+
 import java.util.List;
 
-//TODO: finish
 
 public class StateRmiServer extends UnicastRemoteObject  implements CommitteeStateRmiInterface{
 
-    public StateRmiServer(String rmiPort) throws RemoteException {
+    public interface OnStartElectionCallback {
+        void callback();
+    }
+
+    public interface OnStopElectionCallback {
+        void callback();
+    }
+
+    public interface OnReportElectionCallback {
+        List<String> callback();
+    }
+
+    private String port;
+
+    private OnStartElectionCallback onStartElection;
+    private OnStopElectionCallback onStopElection;
+    private OnReportElectionCallback onReportElectionCallback;
+
+
+    public StateRmiServer(
+            String rmiPort,
+            OnStartElectionCallback onStartElection,
+            OnStopElectionCallback onStopElection,
+            OnReportElectionCallback onReportElectionCallback
+            )
+            throws RemoteException {
         super();
+
+        this.port = rmiPort;
+        this.onStartElection = onStartElection;
+        this.onStopElection = onStopElection;
+        this.onReportElectionCallback = onReportElectionCallback;
 
         String name = "StateRmiServer";
         Registry registry = LocateRegistry.createRegistry(Integer.parseInt(rmiPort));
@@ -23,32 +50,30 @@ public class StateRmiServer extends UnicastRemoteObject  implements CommitteeSta
 
     @Override
     public void startElection() throws RemoteException {
-        System.out.println("startElection");
+        System.out.println("Start Election port " + port);
+        onStartElection.callback();
     }
 
     @Override
     public void stopElection() throws RemoteException {
-        System.out.println("stopElection");
+        System.out.println("Stop Election port " + port);
+        onStopElection.callback();
     }
 
     @Override
     public List<String> getElectionStatus() throws RemoteException {
-        System.out.println("getElectionStatus");
-        ArrayList<String> a = new ArrayList<String>();
-        a.add("a");
-        a.add("b");
-        a.add("c");
-        return a;
+        System.out.println("Report Election port " + port);
+        return onReportElectionCallback.callback();
     }
 
 
 
-    // TODO: after test rename main to startServer or something.
+    // TODO: delete main.
     public static void main(String[] args) {
 //        try {
 //            Registry rgsty = LocateRegistry.createRegistry(1888);
 
-        String name = "StateRmiServer";
+//        String name = "StateRmiServer";
 //            StateRmiServer server = new StateRmiServer();
 //            StateRmiServer stub = (StateRmiServer) UnicastRemoteObject.exportObject(server, 1888);
 //            Registry registry = LocateRegistry.getRegistry();
