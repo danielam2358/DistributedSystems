@@ -63,7 +63,7 @@ public class State {
                 // init State gRPC server.
                 this.stateGrpcServer = new StateGrpcServer();
                 stateGrpcServer.start(grpcPort);
-                stateGrpcServer.blockUntilShutdown();
+//                stateGrpcServer.blockUntilShutdown();
         }
 
         private void startStateGrpcClient() throws IOException {
