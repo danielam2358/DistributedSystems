@@ -49,6 +49,10 @@ public class StateZookeeper implements Runnable{
         this.zooKeeperWrapper = new ZooKeeperWrapper(connectString, sessionTimeout, new NodeDeleteWatcher());
     }
 
+    public void stop() throws InterruptedException {
+        this.zooKeeperWrapper.stop();
+    }
+
     public boolean AmiLeader(){
         return this.amiLeader;
     }

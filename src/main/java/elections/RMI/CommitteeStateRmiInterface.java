@@ -1,15 +1,17 @@
 package elections.RMI;
 
+import elections.REST.VoterData;
+
+import java.io.IOException;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.List;
 
 public interface CommitteeStateRmiInterface extends Remote{
 
-    public void startElection() throws RemoteException;
+    public void startElection() throws IOException, InterruptedException;
 
-    public void stopElection() throws RemoteException;
+    public void stopElection() throws RemoteException, InterruptedException;
 
-    // TODO: List<String>? decide.
-    public List<String> getElectionStatus() throws RemoteException;
+    public List<VoterData> getElectionStatus() throws RemoteException;
 }

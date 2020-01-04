@@ -1,6 +1,7 @@
 package elections;
 
 import elections.REST.StateRestServer;
+import elections.REST.VoterData;
 import elections.RMI.StateRmiServer;
 import elections.gRPC.StateGrpcClient;
 import elections.gRPC.StateGrpcServer;
@@ -8,8 +9,14 @@ import elections.zookeeper.StateZookeeper;
 
 import java.io.IOException;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class State {
+
+        Map<String, VoterData> votes = new HashMap<String, VoterData>();
 
         private static final String ZK_SERVER_ADDRESS = "127.0.0.1:2181";
         private static final int ZK_SESSION_TIMEOUT = 50000;
@@ -48,26 +55,44 @@ public class State {
                 this.restPort = restPort;
                 this.grpcPort = grpcPort;
 
-
-                startStateGrpcServer();
-
-                startStateGrpcClient();
-
-                startStateZookeeper();
-
                 startStateRmiServer();
-
-                startStateRestServer();
-
         }
 
 
+
+        private void startStateRmiServer() throws IOException, InterruptedException {
+
+                onStartElection = () -> {
+
+                        startStateGrpcServer();
+                        startStateGrpcClient();
+                        startStateZookeeper();
+                        startStateRestServer();
+                };
+
+                onStopElection = () -> {
+                        stateGrpcServer.stop();
+                        stateGrpcClient.shutdown();
+                        stateZookeeper.stop();
+                        stateRestServer.close();
+                };
+
+                onReportElectionCallback = () -> {
+                        if(stateZookeeper.AmiLeader()){
+                                return (List<VoterData>)  votes.values();
+                        }
+                        return null;
+                };
+
+                // init RMI server
+                this.stateRmiServer = new StateRmiServer(rmiPort, onStartElection, onStopElection, onReportElectionCallback);
+        }
 
         private void startStateGrpcServer() throws IOException, InterruptedException {
                 // init State gRPC server.
                 this.stateGrpcServer = new StateGrpcServer();
                 stateGrpcServer.start(grpcPort);
-//                stateGrpcServer.blockUntilShutdown();
+
         }
 
         private void startStateGrpcClient() throws IOException {
@@ -91,19 +116,17 @@ public class State {
                 stateZookeeper.run();
         }
 
-        private void startStateRmiServer() throws RemoteException {
-
-                //TODO: implement onStartElection, onStopElection, onReportElectionCallback
-
-                // init RMI server
-                this.stateRmiServer = new StateRmiServer(rmiPort, onStartElection, onStopElection, onReportElectionCallback);
-        }
-
         private void startStateRestServer(){
                 // init Rest Server
-                // TODO
+                // TODO : what if voter not from this state.
                 onVote = (voter) -> {
-                        System.out.println("hello" + voter.getName());
+                        if (stateZookeeper.AmiLeader()){
+                                votes.put(voter.getId(), voter);
+                        }
+                        else {
+                                return; // TODO
+                        }
+//                        System.out.println("hello");
                 };
                 this.stateRestServer = new StateRestServer();
                 stateRestServer.start(restPort, onVote);

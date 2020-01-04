@@ -15,6 +15,10 @@ public class ZooKeeperWrapper {
         this.zooKeeper = new ZooKeeper(connectString, sessionTimeout, watcher);
     }
 
+    public void stop() throws InterruptedException {
+        this.zooKeeper.close();
+    }
+
 
     public String createNode(final String node, final boolean watch, final CreateMode createdMode) {
 

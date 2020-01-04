@@ -15,6 +15,8 @@ import java.util.HashMap;
 //@ComponentScan(basePackageClasses = VoterController.class)
 public class StateRestServer {
 
+    private ConfigurableApplicationContext context;
+
     public interface OnVoteCallback {
         void callback(VoterData newVoter);
     }
@@ -38,7 +40,7 @@ public class StateRestServer {
         HashMap<String, Object> props = new HashMap<>();
         props.put("server.port", Integer.parseInt(restPort));
 
-        ConfigurableApplicationContext context = new SpringApplicationBuilder()
+        this.context = new SpringApplicationBuilder()
                 .sources(StateRestServer.class)
                 .properties(props)
                 .run("");
@@ -46,6 +48,10 @@ public class StateRestServer {
        Handler handler = context.getBean(Handler.class);
 
        handler.init(callback);
+    }
+
+    public void close(){
+        context.close();
     }
 
 }

@@ -16,7 +16,6 @@ public class StateGrpcClient {
     private ManagedChannel channel;
     private BallotGrpc.BallotBlockingStub blockingStub;
 
-    /** Construct client connecting to HelloWorld server at {@code host:port}. */
     public StateGrpcClient(String host, int port) {
         this(ManagedChannelBuilder.forAddress(host, port)
                 // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
@@ -25,7 +24,6 @@ public class StateGrpcClient {
                 .build());
     }
 
-    /** Construct client for accessing HelloWorld server using the existing channel. */
     public StateGrpcClient(ManagedChannel channel) {
         this.channel = channel;
         blockingStub = BallotGrpc.newBlockingStub(channel);
@@ -35,7 +33,6 @@ public class StateGrpcClient {
         channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
     }
 
-    /** Say hello to server. */
     public void greet(String name) {
         logger.info("Will try to greet " + name + " ...");
         StateGrpcProto.VoteRequest request = StateGrpcProto.VoteRequest.newBuilder().setName(name).build();

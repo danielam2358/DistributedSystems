@@ -22,6 +22,7 @@ public class StateGrpcServer {
 
         @Override
         public void vote(StateGrpcProto.VoteRequest req, StreamObserver<StateGrpcProto.VoteReply> responseObserver) {
+//            req.ge
             StateGrpcProto.VoteReply reply = StateGrpcProto.VoteReply.newBuilder().build();
             responseObserver.onNext(reply);
             responseObserver.onCompleted();
@@ -41,19 +42,6 @@ public class StateGrpcServer {
 
         logger.info("Server started, listening on " + port);
 
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                // Use stderr here since the logger may have been reset by its JVM shutdown hook.
-                System.err.println("*** shutting down gRPC server since JVM is shutting down");
-                try {
-                    StateGrpcServer.this.stop();
-                } catch (InterruptedException e) {
-                    e.printStackTrace(System.err);
-                }
-                System.err.println("*** server shut down");
-            }
-        });
     }
 
     public void stop() throws InterruptedException {
@@ -61,24 +49,5 @@ public class StateGrpcServer {
             server.shutdown().awaitTermination(30, TimeUnit.SECONDS);
         }
     }
-
-    /**
-     * Await termination on the main thread since the grpc library uses daemon threads.
-     */
-    public void blockUntilShutdown() throws InterruptedException {
-        if (server != null) {
-            server.awaitTermination();
-        }
-    }
-
-//    /**
-//     * Main launches the server from the command line.
-//     */
-//    public static void main(String[] args) throws IOException, InterruptedException {
-//        final  StateGrpcServer server = new StateGrpcServer();
-//        int port = 50051;  // TODO: how should i find port?
-//        server.start(port);
-//        server.blockUntilShutdown();
-//    }
 
 }

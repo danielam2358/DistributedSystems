@@ -1,6 +1,7 @@
 package elections.RMI;
 
 
+import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -12,7 +13,7 @@ class CommitteeRmiServer{
 
 
     // TODO: after test rename main to startClient or something.
-    public static void main(String[] args) throws RemoteException, NotBoundException {
+    public static void main(String[] args) throws IOException, NotBoundException, InterruptedException {
 
         String name = "hello";
         Registry registry = LocateRegistry.getRegistry(1888);
