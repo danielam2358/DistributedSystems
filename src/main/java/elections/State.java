@@ -5,14 +5,21 @@ import elections.REST.VoterData;
 import elections.RMI.StateRmiServer;
 import elections.gRPC.StateGrpcClient;
 import elections.gRPC.StateGrpcServer;
+import elections.json.votersJson;
 import elections.zookeeper.StateZookeeper;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class State {
 
@@ -133,13 +140,17 @@ public class State {
         }
 
 
-        public static void main(String[] args) throws IOException, InterruptedException {
-                String stateStr = "NY";
-                String zkPort = "2181";
-                String rmiPort = "8991";
-                String restPort = "8992";
-                String grpcPort = "8993";
-                State state = new State(stateStr, zkPort, rmiPort, restPort, grpcPort);
+        public static void main(String[] args) throws IOException, InterruptedException, ParseException {
+//                String stateStr = "NY";
+//                String zkPort = "2181";
+//                String rmiPort = "8991";
+//                String restPort = "8992";
+//                String grpcPort = "8993";
+//                State state = new State(stateStr, zkPort, rmiPort, restPort, grpcPort);
+
+
+                System.out.println(votersJson.isVoterValid("NY", "10"));
+                System.out.println(votersJson.isVoterValid("NY", "50"));
     }
 
 }

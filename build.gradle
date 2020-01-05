@@ -57,6 +57,7 @@ dependencies {
 
     //or.json
     compile 'org.json:json:20171018'
+    compile 'com.googlecode.json-simple:json-simple:1.1.1'
 
 }
 
