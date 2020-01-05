@@ -126,10 +126,14 @@ public class State {
 
         private void startStateRestServer(){
                 // init Rest Server
-                // TODO : what if voter not from this state.
+
                 onVote = (voter) -> {
                         if (!votersJson.isVoterValid(voter.getId(), voter.getState(), voter.getName())){
                                 return;
+                        }
+
+                        if (!voter.getState().equals(stateStr)){
+                                //TODO
                         }
 
                         if (stateZookeeper.AmiLeader()){
@@ -137,7 +141,6 @@ public class State {
                         }
                         else {
                                  // TODO
-                                System.out.println("hello");
                         }
                 };
                 this.stateRestServer = new StateRestServer();
