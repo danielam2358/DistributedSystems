@@ -127,7 +127,11 @@ public class State {
                 // init Rest Server
                 // TODO : what if voter not from this state.
                 onVote = (voter) -> {
-                        if (stateZookeeper.AmiLeader()){
+                        if (!votersJson.isVoterValid(voter.getState(), voter.getId()){
+                                return;
+                        }
+
+                        if (stateZookeeper.AmiLeader() && )){
                                 votes.put(voter.getId(), voter);
                         }
                         else {
