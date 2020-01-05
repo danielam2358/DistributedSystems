@@ -5,6 +5,7 @@ import elections.REST.VoterData;
 import elections.RMI.StateRmiServer;
 import elections.gRPC.StateGrpcClient;
 import elections.gRPC.StateGrpcServer;
+import elections.json.candidatesJson;
 import elections.json.votersJson;
 import elections.zookeeper.StateZookeeper;
 
@@ -127,17 +128,17 @@ public class State {
                 // init Rest Server
                 // TODO : what if voter not from this state.
                 onVote = (voter) -> {
-                        if (!votersJson.isVoterValid(voter.getState(), voter.getId()){
+                        if (!votersJson.isVoterValid(voter.getId(), voter.getState(), voter.getName())){
                                 return;
                         }
 
-                        if (stateZookeeper.AmiLeader() && )){
+                        if (stateZookeeper.AmiLeader()){
                                 votes.put(voter.getId(), voter);
                         }
                         else {
-                                return; // TODO
+                                 // TODO
+                                System.out.println("hello");
                         }
-//                        System.out.println("hello");
                 };
                 this.stateRestServer = new StateRestServer();
                 stateRestServer.start(restPort, onVote);
@@ -152,9 +153,6 @@ public class State {
 //                String grpcPort = "8993";
 //                State state = new State(stateStr, zkPort, rmiPort, restPort, grpcPort);
 
-
-                System.out.println(votersJson.isVoterValid("NY", "10"));
-                System.out.println(votersJson.isVoterValid("NY", "50"));
     }
 
 }
