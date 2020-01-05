@@ -128,19 +128,30 @@ public class State {
                 // init Rest Server
 
                 onVote = (voter) -> {
+
+                        // voter is not valid
                         if (!votersJson.isVoterValid(voter.getId(), voter.getState(), voter.getName())){
                                 return;
                         }
 
+                        // vote is not valid
+                        if (!candidatesJson.isCandidateValid(voter.getState(), voter.getVote())){
+                                return;
+                        }
+
+                        // voter not from this server state
                         if (!voter.getState().equals(stateStr)){
                                 //TODO
                         }
 
+                        // server state is leader
                         if (stateZookeeper.AmiLeader()){
                                 votes.put(voter.getId(), voter);
                         }
+
+                        // server state is not leader
                         else {
-                                 // TODO
+//                                this.stateGrpcClient. // TODO
                         }
                 };
                 this.stateRestServer = new StateRestServer();
