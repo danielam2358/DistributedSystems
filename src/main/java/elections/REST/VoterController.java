@@ -19,13 +19,7 @@ public class VoterController {
     private StateRestServer.Handler handler;
 
     VoterController(StateRestServer.Handler bean) {
-
-        // TODO: delete
         this.handler = bean;
-        VoterData voter_0 = new VoterData("123", "jhon", "WDC", "1");
-        VoterData voter_1 = new VoterData("321", "jhon", "WDC", "1");
-        voters.put(voter_0.getId(), voter_0);
-        voters.put(voter_1.getId(), voter_1);
     }
 
 
@@ -37,9 +31,6 @@ public class VoterController {
 
     @PostMapping("/voters")
     VoterData newVoter(@RequestBody VoterData newVoter) {
-        if(voters.containsKey(newVoter.getId())){
-            return voters.get(newVoter.getId());
-        }
         voters.put(newVoter.getId(), newVoter);
         handler.onVote(newVoter);
         return newVoter;

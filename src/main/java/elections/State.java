@@ -17,12 +17,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger; // TODO: logger.
 
 
 public class State {
 
 
+        private static final Logger LOGGER = Logger.getLogger( State.class.getName() );
 
         Map<String, VoterData> votes = new HashMap<String, VoterData>();
 
@@ -98,6 +100,11 @@ public class State {
 
                 // init RMI server
                 this.stateRmiServer = new StateRmiServer(rmiPort, onStartElection, onStopElection, onReportElectionCallback);
+
+                LOGGER.info(String.format("state %s: start rmi server on port %s", stateStr, rmiPort));
+
+                // TODO: delete
+                onStartElection.callback();
         }
 
         private void startStateGrpcServer() throws IOException, InterruptedException {
@@ -108,11 +115,14 @@ public class State {
                 this.stateGrpcServer = new StateGrpcServer();
                 stateGrpcServer.start(grpcPort, onGrpcVote);
 
+                LOGGER.info(String.format("state %s: start gRPC server listening on port %s", stateStr, grpcPort));
+
         }
 
         private void startStateGrpcClient() throws IOException {
                 onLeaderElection = (leaderAddress) -> {
                         this.stateGrpcClient = new StateGrpcClient("127.0.0.1", leaderAddress);
+                        LOGGER.info(String.format("state %s: start gRPC client on port %s", stateStr, leaderAddress));
                 };
 
         }
@@ -137,11 +147,16 @@ public class State {
 
                 this.stateRestServer = new StateRestServer();
                 stateRestServer.start(restPort, onRestVote);
+
+                LOGGER.info(String.format("state %s: start rest server on port %s", stateStr, restPort));
         }
 
 
         // get votes from rest server or from colleague state server.
         private void manageStateVote(VoterData voter){
+
+//                LOGGER.info(String.format("manageStateVote"));
+                LOGGER.info("manageStateVote");
 
                 // voter is not valid
                 if (!votersJson.isVoterValid(voter.getId(), voter.getState(), voter.getName())){
@@ -178,6 +193,7 @@ public class State {
 
                 List<String> colleagueGrpcStateServers = serversJson.getAllGrpcPorts(stateStr);
                 System.out.println(colleagueGrpcStateServers);
+                System.out.println(votes);
         }
 
 
@@ -188,6 +204,9 @@ public class State {
                 String rmiPort = "8991";
                 String restPort = "8992";
                 String grpcPort = "8993";
+
+                LOGGER.info(String.format("start %s servers.", stateStr));
+
                 State state = new State(stateStr, rmiPort, restPort, grpcPort);
 
 //                System.out.println(serversJson.getRandomGrpcPort(stateStr));

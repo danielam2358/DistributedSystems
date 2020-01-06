@@ -1,6 +1,8 @@
 package elections;
 
 import elections.REST.VoterData;
+import elections.json.candidatesJson;
+import elections.json.votersJson;
 import org.apache.zookeeper.server.quorum.Vote;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -22,11 +24,7 @@ public class Voter {
         
         VoterData voteData = new VoterData(id, name, state, vote);
 
-
-        HttpHeaders headers = new HttpHeaders();
-//        headers.set("X-COM-LOCATION", "USA");
-
-        HttpEntity<VoterData> request = new HttpEntity<>(voteData, headers);
+        HttpEntity<VoterData> request = new HttpEntity<>(voteData, new HttpHeaders());
 
         ResponseEntity<String> result = restTemplate.postForEntity(uri, request, String.class);
 
@@ -35,11 +33,14 @@ public class Voter {
     }
 
     public static void main(String[] args) throws URISyntaxException {
-        String port = "";
-        String id = "";
-        String name = "";
-        String state = "";
-        String vote =  "";
+
+        String port = "8992";
+        String id = "1000246700";
+        String name = "Kasia Nicol";
+        String state = "Kentucky";
+        String vote = candidatesJson.getRandomCandidate(state);
+
+        System.out.println(vote);
 
         Vote(port, id, name, state, vote);
     }
