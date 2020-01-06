@@ -14,8 +14,8 @@ public class StateGrpcClient {
     private ManagedChannel channel;
     private BallotGrpc.BallotBlockingStub blockingStub;
 
-    public StateGrpcClient(String host, int port) {
-        this(ManagedChannelBuilder.forAddress(host, port)
+    public StateGrpcClient(String host, String port) {
+        this(ManagedChannelBuilder.forAddress(host, Integer.parseInt(port))
                 .usePlaintext()
                 .build());
     }

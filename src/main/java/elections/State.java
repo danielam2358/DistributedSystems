@@ -22,9 +22,12 @@ import java.util.logging.Logger; // TODO: logger.
 
 public class State {
 
+
+
         Map<String, VoterData> votes = new HashMap<String, VoterData>();
 
-        private static final String ZK_SERVER_ADDRESS = "127.0.0.1:2181";
+        private static final String SERVER_ADDRESS = "127.0.0.1";
+        private static final String ZK_SERVER_ADDRESS = SERVER_ADDRESS + ":2181";
         private static final int ZK_SESSION_TIMEOUT = 50000;
 
         private final String stateStr;
@@ -109,8 +112,7 @@ public class State {
 
         private void startStateGrpcClient() throws IOException {
                 onLeaderElection = (leaderAddress) -> {
-                        int port = Integer.parseInt(leaderAddress);
-                        this.stateGrpcClient = new StateGrpcClient("127.0.0.1", port);
+                        this.stateGrpcClient = new StateGrpcClient("127.0.0.1", leaderAddress);
                 };
 
         }
@@ -153,23 +155,29 @@ public class State {
 
                 // voter not from this server state
                 if (!voter.getState().equals(stateStr)){
-                        //TODO
+                        String port = serversJson.getRandomGrpcPort(voter.getState());
+                        StateGrpcClient grpClient = new StateGrpcClient(SERVER_ADDRESS, port);
+                        grpClient.vote(voter);
                 }
 
                 // server state is leader
                 if (stateZookeeper.AmiLeader()){
                         votes.put(voter.getId(), voter);
+                        spreadVotes();
                 }
 
                 // server state is not leader
                 else {
-//                                this.stateGrpcClient. // TODO
+                        this.stateGrpcClient.vote(voter);
                 }
         }
 
         // update active replications in shard.
         private void spreadVotes(){
                 //TODO
+
+                List<String> colleagueGrpcStateServers = serversJson.getAllGrpcPorts(stateStr);
+                System.out.println(colleagueGrpcStateServers);
         }
 
 
@@ -177,16 +185,16 @@ public class State {
         public static void main(String[] args) throws IOException, InterruptedException, ParseException {
 
                 String stateStr = "Kentucky";
-//                String rmiPort = "8991";
-//                String restPort = "8992";
-//                String grpcPort = "8993";
-//                State state = new State(stateStr, rmiPort, restPort, grpcPort);
+                String rmiPort = "8991";
+                String restPort = "8992";
+                String grpcPort = "8993";
+                State state = new State(stateStr, rmiPort, restPort, grpcPort);
 
-                System.out.println(serversJson.getRandomGrpcPort(stateStr));
-                System.out.println(serversJson.getRandomRestPort(stateStr));
-                System.out.println(serversJson.getAllRmiPorts(stateStr));
-                System.out.println(serversJson.getAllRestPorts(stateStr));
-                System.out.println(serversJson.getAllGrpcPorts(stateStr));
+//                System.out.println(serversJson.getRandomGrpcPort(stateStr));
+//                System.out.println(serversJson.getRandomRestPort(stateStr));
+//                System.out.println(serversJson.getAllRmiPorts(stateStr));
+//                System.out.println(serversJson.getAllRestPorts(stateStr));
+//                System.out.println(serversJson.getAllGrpcPorts(stateStr));
     }
 
 }
