@@ -42,21 +42,4 @@ public class StateGrpcClient {
         // vote
         blockingStub.vote(request);
     }
-
-
-//    public static void main(String[] args) throws Exception {
-//        // Access a service running on the local machine on port 50051
-//        StateGrpcClient client = new StateGrpcClient("localhost", 50051);
-//        try {
-//            String user = "world";
-//            // Use the arg as the name to greet if provided
-//            if (args.length > 0) {
-//                user = args[0];
-//            }
-//            client.greet(user);
-//        } finally {
-//            client.shutdown();
-//        }
-//    }
-
 }

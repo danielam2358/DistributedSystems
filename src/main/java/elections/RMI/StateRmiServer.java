@@ -69,30 +69,4 @@ public class StateRmiServer extends UnicastRemoteObject  implements CommitteeSta
         return onReportElectionCallback.callback();
     }
 
-
-
-    // TODO: delete main.
-    public static void main(String[] args) {
-//        try {
-//            Registry rgsty = LocateRegistry.createRegistry(1888);
-
-//        String name = "StateRmiServer";
-//            StateRmiServer server = new StateRmiServer();
-//            StateRmiServer stub = (StateRmiServer) UnicastRemoteObject.exportObject(server, 1888);
-//            Registry registry = LocateRegistry.getRegistry();
-//            registry.rebind(name, stub);
-//            Naming.rebind(name, server);
-//
-//            Registry rgsty = LocateRegistry.createRegistry(1888);
-//            rgsty.rebind("hello", server);
-//            System.out.println("Server ready");
-//
-//        } catch (Exception e) {
-//
-//            System.out.println("Server exception: " + e.toString());
-//            e.printStackTrace();
-//
-//        }
-
-    }
 }

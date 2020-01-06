@@ -13,6 +13,7 @@ import elections.zookeeper.StateZookeeper;
 import org.json.simple.parser.ParseException;
 
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,7 +94,7 @@ public class State {
 
                 onReportElectionCallback = () -> {
                         if(stateZookeeper.AmiLeader()){
-                                return (List<VoterData>)  votes.values();
+                                return new ArrayList<>(votes.values());
                         }
                         return null;
                 };
@@ -104,7 +105,7 @@ public class State {
                 LOGGER.info(String.format("state %s: start rmi server on port %s", stateStr, rmiPort));
 
                 // TODO: delete
-                onStartElection.callback();
+//                onStartElection.callback();
         }
 
         private void startStateGrpcServer() throws IOException, InterruptedException {
