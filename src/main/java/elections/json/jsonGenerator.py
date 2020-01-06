@@ -30,6 +30,7 @@ for line in f.readlines():
 
 voters_data = {}
 candidates_data = {}
+servers_data = {}
 
 citizen_id = START_ID
 
@@ -60,12 +61,31 @@ def generate_candidates():
             state_dic[str(citizen_id).zfill(ZERO_FILLED_ID)] = {"name": random_name()}
         candidates_data[state] = state_dic
 
+def generate_servers():
+    rmi_port = 12000
+    rest_port = 13000
+    grpc_port = 14000
+
+    for state, number_of_candidates in states.items():
+        state_dic = {}
+        for index in range(number_of_candidates):
+            state_dic[str(index)] = {"rmi_port" : str(rmi_port), "rest_port": str(rest_port), "grpc_port": str(grpc_port)}
+            rmi_port += 1
+            rest_port += 1
+            grpc_port += 1
+        servers_data[state] = state_dic
+
+
 
 generate_voters()
 generate_candidates()
+generate_servers()
 
 with open('./voters.json', 'w') as outfile:
-    json.dump([voters_data], outfile)
+    json.dump([voters_data], outfile, indent=2)
 
 with open('./candidates.json', 'w') as outfile:
-    json.dump([candidates_data], outfile)
+    json.dump([candidates_data], outfile, indent=2)
+
+with open('./servers.json', 'w') as outfile:
+    json.dump([servers_data], outfile, indent=2)

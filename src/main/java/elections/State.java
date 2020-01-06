@@ -6,6 +6,7 @@ import elections.RMI.StateRmiServer;
 import elections.gRPC.StateGrpcClient;
 import elections.gRPC.StateGrpcServer;
 import elections.json.candidatesJson;
+import elections.json.serversJson;
 import elections.json.votersJson;
 import elections.zookeeper.StateZookeeper;
 
@@ -28,7 +29,6 @@ public class State {
 
         private final String stateStr;
 
-        private final String zkPort;
         private final String rmiPort;
         private final String restPort;
         private final String grpcPort;
@@ -56,11 +56,10 @@ public class State {
         private StateGrpcServer stateGrpcServer;
         private StateGrpcClient stateGrpcClient;
 
-        public State(String stateStr, String zkPort, String rmiPort, String restPort, String grpcPort) throws IOException, InterruptedException {
+        public State(String stateStr, String rmiPort, String restPort, String grpcPort) throws IOException, InterruptedException {
 
                 this.stateStr = stateStr;
 
-                this.zkPort = zkPort;
                 this.rmiPort = rmiPort;
                 this.restPort = restPort;
                 this.grpcPort = grpcPort;
@@ -138,7 +137,10 @@ public class State {
                 stateRestServer.start(restPort, onRestVote);
         }
 
+
+        // get votes from rest server or from colleague state server.
         private void manageStateVote(VoterData voter){
+
                 // voter is not valid
                 if (!votersJson.isVoterValid(voter.getId(), voter.getState(), voter.getName())){
                         return;
@@ -165,15 +167,26 @@ public class State {
                 }
         }
 
+        // update active replications in shard.
+        private void spreadVotes(){
+                //TODO
+        }
+
+
 
         public static void main(String[] args) throws IOException, InterruptedException, ParseException {
-                String stateStr = "NY";
-                String zkPort = "2181";
-                String rmiPort = "8991";
-                String restPort = "8992";
-                String grpcPort = "8993";
-                State state = new State(stateStr, zkPort, rmiPort, restPort, grpcPort);
 
+                String stateStr = "Kentucky";
+//                String rmiPort = "8991";
+//                String restPort = "8992";
+//                String grpcPort = "8993";
+//                State state = new State(stateStr, rmiPort, restPort, grpcPort);
+
+                System.out.println(serversJson.getRandomGrpcPort(stateStr));
+                System.out.println(serversJson.getRandomRestPort(stateStr));
+                System.out.println(serversJson.getAllRmiPorts(stateStr));
+                System.out.println(serversJson.getAllRestPorts(stateStr));
+                System.out.println(serversJson.getAllGrpcPorts(stateStr));
     }
 
 }
