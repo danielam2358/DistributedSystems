@@ -18,8 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger; // TODO: logger.
+import java.util.logging.Logger;
 
 
 public class State {
@@ -202,13 +201,25 @@ public class State {
         public static void main(String[] args) throws IOException, InterruptedException, ParseException {
 
                 String stateStr = "Kentucky";
-                String rmiPort = "8991";
-                String restPort = "8992";
-                String grpcPort = "8993";
+
+                List<String> rmiPorts = serversJson.getAllRmiPorts(stateStr);
+                List<String> restPorts = serversJson.getAllRestPorts(stateStr);
+                List<String> grpcPorts = serversJson.getAllGrpcPorts(stateStr);
+
+                for(int i = 0; i< rmiPorts.size(); i++){
+                        String rmiPort = rmiPorts.get(i);
+                        String restPort = restPorts.get(i);
+                        String grpcPort = grpcPorts.get(i);
+                        State state = new State(stateStr, rmiPort, restPort, grpcPort);
+                }
 
                 LOGGER.info(String.format("start %s servers.", stateStr));
 
-                State state = new State(stateStr, rmiPort, restPort, grpcPort);
+
+
+
+
+
 
 //                System.out.println(serversJson.getRandomGrpcPort(stateStr));
 //                System.out.println(serversJson.getRandomRestPort(stateStr));

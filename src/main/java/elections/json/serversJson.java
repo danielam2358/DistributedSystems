@@ -61,7 +61,7 @@ public class serversJson {
 
     }
 
-    public static List<String> getAllPorts(String state, String field){
+    private static List<String> getAllPorts(String state, String field){
         JSONObject stateServersList = (JSONObject) serversLists.get(state);
         List<String> rmiPortsLists = new ArrayList<>();
 

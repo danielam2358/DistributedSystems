@@ -6,6 +6,7 @@ np.random.seed(0)
 NUMBERS_OF_VOTERS_IN_STATE = 5000
 START_ID = 1000000000
 ZERO_FILLED_ID = 10
+NUMBER_OF_SERVER_REPLICATION = 3
 
 # states
 
@@ -66,9 +67,9 @@ def generate_servers():
     rest_port = 13000
     grpc_port = 14000
 
-    for state, number_of_candidates in states.items():
+    for state in states.keys():
         state_dic = {}
-        for index in range(number_of_candidates):
+        for index in range(NUMBER_OF_SERVER_REPLICATION):
             state_dic[str(index)] = {"rmi_port" : str(rmi_port), "rest_port": str(rest_port), "grpc_port": str(grpc_port)}
             rmi_port += 1
             rest_port += 1
