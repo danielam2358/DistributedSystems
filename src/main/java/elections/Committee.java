@@ -7,6 +7,7 @@ import elections.json.serversJson;
 
 import java.io.IOException;
 import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
@@ -50,7 +51,7 @@ public class Committee {
             try {
                 lookUp.startElection();
             } catch (IOException | InterruptedException e) {
-                e.printStackTrace();
+
             }
         });
     }
@@ -96,6 +97,18 @@ public class Committee {
         Config.statesString.forEach(Committee::stateReportElection);
     }
 
+    public static void downServer() throws RemoteException, InterruptedException {
+        Config.statesString.forEach( state -> {
+            CommitteeStateRmiInterface lookup = lookupMap.get(state).remove(0);
+            try {
+                lookup.stopElection();
+            } catch (RemoteException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        });
+
+    }
+
 
 
     public static void main(String[] args) throws IOException, NotBoundException, InterruptedException {
@@ -106,12 +119,17 @@ public class Committee {
         boolean serversUp = false;
         String cmd = "";
 
-        System.out.println("commands: start, stop, report, quit");
+        System.out.println("commands: init, start, stop, report, quit, down");
 
         while (!cmd.equals("quit")){
             cmd = scan.next();
 
             switch (cmd){
+
+                case "init": {
+                    init();
+                }
+                break;
 
                 case "start": {
                         serversUp = true;
@@ -127,6 +145,11 @@ public class Committee {
 
                 case "report": {
                     report();
+                }
+                    break;
+
+                case "down":{
+                    downServer();
                 }
                     break;
 

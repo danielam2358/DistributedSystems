@@ -123,6 +123,11 @@ public class StateZookeeper implements Runnable{
             final Event.EventType eventType = event.getType();
             if(Event.EventType.NodeDeleted.equals(eventType)) {
                 if(event.getPath().equalsIgnoreCase(createdLeaderNodePath)) {
+                    try {
+                        zooKeeperWrapper.deleteNode(createdServerNode);
+                    } catch (KeeperException | InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     startLeaderElection();
                 }
             }

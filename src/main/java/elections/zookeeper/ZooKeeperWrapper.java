@@ -72,5 +72,9 @@ public class ZooKeeperWrapper {
             e.printStackTrace();
         }
     }
+
+    public void deleteNode(final String node) throws KeeperException, InterruptedException {
+        zooKeeper.delete(node, -1);
+    }
 }
 

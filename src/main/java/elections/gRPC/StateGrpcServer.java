@@ -45,10 +45,17 @@ public class StateGrpcServer {
         this.onGrpcVoteCallback = onGrpcVoteCallback;
         int port = Integer.parseInt(grpcPort);
 
-        server = ServerBuilder.forPort(port)
-                .addService(new BallotImpl())
-                .build()
-                .start();
+        try {
+
+            server = ServerBuilder.forPort(port)
+                    .addService(new BallotImpl())
+                    .build()
+                    .start();
+        }
+
+        catch (Exception e){
+
+        }
 
     }
 
