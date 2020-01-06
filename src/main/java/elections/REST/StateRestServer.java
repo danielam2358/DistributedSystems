@@ -1,11 +1,9 @@
 package elections.REST;
 
-import elections.State;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
@@ -17,26 +15,26 @@ public class StateRestServer {
 
     private ConfigurableApplicationContext context;
 
-    public interface OnVoteCallback {
+    public interface OnRestVoteCallback {
         void callback(VoterData newVoter);
     }
 
     @Component
     public static class Handler {
 
-        private OnVoteCallback onVoteCallback;
+        private OnRestVoteCallback onRestVoteCallback;
 
-        void init(OnVoteCallback onVoteCallback){
-            this.onVoteCallback = onVoteCallback;
+        void init(OnRestVoteCallback onRestVoteCallback){
+            this.onRestVoteCallback = onRestVoteCallback;
         }
 
         void onVote(VoterData newVoter){
-            this.onVoteCallback.callback(newVoter);
+            this.onRestVoteCallback.callback(newVoter);
         }
 
     }
 
-   public void start(String restPort, OnVoteCallback callback){
+   public void start(String restPort, OnRestVoteCallback callback){
         HashMap<String, Object> props = new HashMap<>();
         props.put("server.port", Integer.parseInt(restPort));
 

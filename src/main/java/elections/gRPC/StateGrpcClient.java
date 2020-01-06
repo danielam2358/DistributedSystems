@@ -2,24 +2,20 @@ package elections.gRPC;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import io.grpc.StatusRuntimeException;
+
+import elections.REST.VoterData;
 import server.state.BallotGrpc;
 import server.state.StateGrpcProto;
 
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class StateGrpcClient {
-    private static final Logger logger = Logger.getLogger(StateGrpcClient.class.getName());
 
     private ManagedChannel channel;
     private BallotGrpc.BallotBlockingStub blockingStub;
 
     public StateGrpcClient(String host, int port) {
         this(ManagedChannelBuilder.forAddress(host, port)
-                // Channels are secure by default (via SSL/TLS). For the example we disable TLS to avoid
-                // needing certificates.
                 .usePlaintext()
                 .build());
     }
@@ -33,38 +29,34 @@ public class StateGrpcClient {
         channel.shutdown().awaitTermination(5, TimeUnit.SECONDS);
     }
 
-    public void greet(String name) {
-        logger.info("Will try to greet " + name + " ...");
-        StateGrpcProto.VoteRequest request = StateGrpcProto.VoteRequest.newBuilder().setName(name).build();
-        StateGrpcProto.VoteReply response;
-        try {
-            response = blockingStub.vote(request);
-        } catch (StatusRuntimeException e) {
-            logger.log(Level.WARNING, "RPC failed: {0}", e.getStatus());
-            return;
-        }
-        logger.info("Greeting: " + response.getStatus());
+    public void vote(VoterData voterData) {
+
+        // build vote request.
+        StateGrpcProto.VoteRequest request = StateGrpcProto.VoteRequest.newBuilder()
+                .setId(voterData.getId())
+                .setName(voterData.getName())
+                .setState(voterData.getState())
+                .setVote(voterData.getVote())
+                .build();
+
+        // vote
+        blockingStub.vote(request);
     }
 
-    // TODO: finish
 
-    /**
-     * Greet server. If provided, the first element of {@code args} is the name to use in the
-     * greeting.
-     */
-    public static void main(String[] args) throws Exception {
-        // Access a service running on the local machine on port 50051
-        StateGrpcClient client = new StateGrpcClient("localhost", 50051);
-        try {
-            String user = "world";
-            // Use the arg as the name to greet if provided
-            if (args.length > 0) {
-                user = args[0];
-            }
-            client.greet(user);
-        } finally {
-            client.shutdown();
-        }
-    }
+//    public static void main(String[] args) throws Exception {
+//        // Access a service running on the local machine on port 50051
+//        StateGrpcClient client = new StateGrpcClient("localhost", 50051);
+//        try {
+//            String user = "world";
+//            // Use the arg as the name to greet if provided
+//            if (args.length > 0) {
+//                user = args[0];
+//            }
+//            client.greet(user);
+//        } finally {
+//            client.shutdown();
+//        }
+//    }
 
 }

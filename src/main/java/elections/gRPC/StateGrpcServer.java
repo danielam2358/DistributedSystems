@@ -1,5 +1,6 @@
 package elections.gRPC;
 
+import elections.REST.VoterData;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
@@ -9,20 +10,28 @@ import server.state.StateGrpcProto;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+
 
 public class StateGrpcServer {
 
-    private static final Logger logger = Logger.getLogger(StateGrpcServer.class.getName());
     private Server server;
+    private OnGrpcVoteCallback onGrpcVoteCallback;
+
+
+    public interface OnGrpcVoteCallback {
+        void callback(VoterData newVoter);
+    }
 
 
     // BallotImpl
-    static class BallotImpl extends BallotGrpc.BallotImplBase {
+    class BallotImpl extends BallotGrpc.BallotImplBase {
 
         @Override
         public void vote(StateGrpcProto.VoteRequest req, StreamObserver<StateGrpcProto.VoteReply> responseObserver) {
-//            req.ge
+
+            VoterData voterData = new VoterData(req.getId(), req.getName(), req.getState(), req.getVote());
+            onGrpcVoteCallback.callback(voterData);
+
             StateGrpcProto.VoteReply reply = StateGrpcProto.VoteReply.newBuilder().build();
             responseObserver.onNext(reply);
             responseObserver.onCompleted();
@@ -31,16 +40,15 @@ public class StateGrpcServer {
 
 
 
-    public void start(String grpcPort) throws IOException {
+    public void start(String grpcPort, OnGrpcVoteCallback onGrpcVoteCallback) throws IOException {
 
+        this.onGrpcVoteCallback = onGrpcVoteCallback;
         int port = Integer.parseInt(grpcPort);
 
         server = ServerBuilder.forPort(port)
                 .addService(new BallotImpl())
                 .build()
                 .start();
-
-        logger.info("Server started, listening on " + port);
 
     }
 

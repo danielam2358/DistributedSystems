@@ -9,18 +9,15 @@ import elections.json.candidatesJson;
 import elections.json.votersJson;
 import elections.zookeeper.StateZookeeper;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 
-import java.io.File;
-import java.io.FileReader;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.io.IOException;
-import java.net.URL;
-import java.rmi.RemoteException;
-import java.util.*;
+import java.util.logging.Logger; // TODO: logger.
+
 
 public class State {
 
@@ -36,8 +33,11 @@ public class State {
         private final String restPort;
         private final String grpcPort;
 
-        // onVote callback injection.
-        private StateRestServer.OnVoteCallback onVote;
+        // onRestVote callback injection.
+        private StateRestServer.OnRestVoteCallback onRestVote;
+
+        // onGrpcVote callback injection
+        private StateGrpcServer.OnGrpcVoteCallback onGrpcVote;
 
         // onLeaderElection callback injection.
         private StateZookeeper.OnLeaderElectionCallback onLeaderElection;
@@ -46,6 +46,8 @@ public class State {
         private StateRmiServer.OnStartElectionCallback onStartElection;
         private StateRmiServer.OnStopElectionCallback onStopElection;
         private StateRmiServer.OnReportElectionCallback onReportElectionCallback;
+
+
 
         // services objects.
         private StateRestServer stateRestServer;
@@ -97,9 +99,12 @@ public class State {
         }
 
         private void startStateGrpcServer() throws IOException, InterruptedException {
+
+                onGrpcVote = this::manageStateVote;
+
                 // init State gRPC server.
                 this.stateGrpcServer = new StateGrpcServer();
-                stateGrpcServer.start(grpcPort);
+                stateGrpcServer.start(grpcPort, onGrpcVote);
 
         }
 
@@ -127,45 +132,47 @@ public class State {
         private void startStateRestServer(){
                 // init Rest Server
 
-                onVote = (voter) -> {
+                onRestVote = this::manageStateVote;
 
-                        // voter is not valid
-                        if (!votersJson.isVoterValid(voter.getId(), voter.getState(), voter.getName())){
-                                return;
-                        }
-
-                        // vote is not valid
-                        if (!candidatesJson.isCandidateValid(voter.getState(), voter.getVote())){
-                                return;
-                        }
-
-                        // voter not from this server state
-                        if (!voter.getState().equals(stateStr)){
-                                //TODO
-                        }
-
-                        // server state is leader
-                        if (stateZookeeper.AmiLeader()){
-                                votes.put(voter.getId(), voter);
-                        }
-
-                        // server state is not leader
-                        else {
-//                                this.stateGrpcClient. // TODO
-                        }
-                };
                 this.stateRestServer = new StateRestServer();
-                stateRestServer.start(restPort, onVote);
+                stateRestServer.start(restPort, onRestVote);
+        }
+
+        private void manageStateVote(VoterData voter){
+                // voter is not valid
+                if (!votersJson.isVoterValid(voter.getId(), voter.getState(), voter.getName())){
+                        return;
+                }
+
+                // vote is not valid
+                if (!candidatesJson.isCandidateValid(voter.getState(), voter.getVote())){
+                        return;
+                }
+
+                // voter not from this server state
+                if (!voter.getState().equals(stateStr)){
+                        //TODO
+                }
+
+                // server state is leader
+                if (stateZookeeper.AmiLeader()){
+                        votes.put(voter.getId(), voter);
+                }
+
+                // server state is not leader
+                else {
+//                                this.stateGrpcClient. // TODO
+                }
         }
 
 
         public static void main(String[] args) throws IOException, InterruptedException, ParseException {
-//                String stateStr = "NY";
-//                String zkPort = "2181";
-//                String rmiPort = "8991";
-//                String restPort = "8992";
-//                String grpcPort = "8993";
-//                State state = new State(stateStr, zkPort, rmiPort, restPort, grpcPort);
+                String stateStr = "NY";
+                String zkPort = "2181";
+                String rmiPort = "8991";
+                String restPort = "8992";
+                String grpcPort = "8993";
+                State state = new State(stateStr, zkPort, rmiPort, restPort, grpcPort);
 
     }
 
