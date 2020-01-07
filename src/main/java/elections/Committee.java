@@ -12,6 +12,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.max;
 
@@ -70,6 +71,8 @@ public class Committee {
     }
 
     private static void stateReportElection(String state){
+        AtomicBoolean reported = new AtomicBoolean(false);
+
         lookupMap.get(state).forEach( lookUp -> {
             List<VoterData> status = null;
             try {
@@ -77,7 +80,8 @@ public class Committee {
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
-            if (status != null){
+            if (status != null && !reported.get()){
+                reported.set(true);
 
                 HashMap<String, Integer> votes = new HashMap<>();
 
@@ -105,7 +109,7 @@ public class Committee {
 
                 String WinnerCandidateId = max(votes.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
                 System.out.println(
-                        String.format("state %s\t candidate %s\t is winner with %d votes",
+                        String.format("\nstate %s\t candidate %s\t is winner with %d votes\n",
                         state,
                         candidates.get(WinnerCandidateId),
                         votes.get(WinnerCandidateId)
@@ -196,6 +200,8 @@ public class Committee {
                     System.out.println("commands: start, stop, report, quit");
             }
         }
+
+        report();
 
         if (serversUp){
             stop();

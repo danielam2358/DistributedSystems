@@ -87,7 +87,7 @@ public class State {
                 onStopElection = () -> {
                         stateGrpcServer.stop();
                         stateGrpcClient.shutdown();
-//                        stateZookeeper.stop();
+                        stateZookeeper.stop();
                         stateRestServer.close();
                 };
 
