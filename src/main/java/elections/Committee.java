@@ -3,6 +3,7 @@ package elections;
 
 import elections.REST.VoterData;
 import elections.RMI.CommitteeStateRmiInterface;
+import elections.json.candidatesJson;
 import elections.json.serversJson;
 
 import java.io.IOException;
@@ -11,6 +12,8 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
+
+import static java.util.Collections.max;
 
 public class Committee {
 
@@ -68,16 +71,49 @@ public class Committee {
 
     private static void stateReportElection(String state){
         lookupMap.get(state).forEach( lookUp -> {
+            List<VoterData> status = null;
             try {
-                // TODO
-                List<VoterData> status = lookUp.getElectionStatus();
-                System.out.println(status);
-            } catch (IOException e) {
+                status = lookUp.getElectionStatus();
+            } catch (RemoteException e) {
                 e.printStackTrace();
+            }
+            if (status != null){
+
+                HashMap<String, Integer> votes = new HashMap<>();
+
+                HashMap<String, String> candidates = candidatesJson.getCandidates(state);
+
+                candidates.keySet().forEach( candidateId -> {
+                    votes.put(candidateId, 0);
+                });
+
+                status.forEach(voterData -> {
+                    String candidateId = voterData.getVote();
+                    Integer currentVote = votes.get(candidateId);
+                    votes.put(candidateId, currentVote + 1);
+                });
+
+                votes.forEach( (candidateId, numberOfVotes) -> {
+                    System.out.println(
+                            String.format("state %s\t candidate %s\t votes %d",
+                                    state,
+                                    candidates.get(candidateId),
+                                    votes.get(candidateId)
+                                    )
+                    );
+                });
+
+                String WinnerCandidateId = max(votes.entrySet(), Comparator.comparingInt(Map.Entry::getValue)).getKey();
+                System.out.println(
+                        String.format("state %s\t candidate %s\t is winner with %d votes",
+                        state,
+                        candidates.get(WinnerCandidateId),
+                        votes.get(WinnerCandidateId)
+                        )
+                );
             }
         });
     }
-
 
 
     private static void init(){

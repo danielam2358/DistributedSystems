@@ -29,7 +29,7 @@ public class StateZookeeper implements Runnable{
     private boolean amiLeader = false;
 
     // hold current path to server node in leader elections
-    private String createdServerNode;
+    private String createdServerNode = null;
 
     // hold current path to leader node in leader elections
     private String createdLeaderNodePath;
@@ -72,10 +72,12 @@ public class StateZookeeper implements Runnable{
     }
 
     private void createServerNode(){
-        final String node = leaderElectionNode;
-        final boolean watch = false;
-        final CreateMode createdMode = CreateMode.EPHEMERAL_SEQUENTIAL;
-        this.createdServerNode = this.zooKeeperWrapper.createNode(node, watch, createdMode);
+        if(this.createdServerNode == null){
+            final String node = leaderElectionNode;
+            final boolean watch = false;
+            final CreateMode createdMode = CreateMode.EPHEMERAL_SEQUENTIAL;
+            this.createdServerNode = this.zooKeeperWrapper.createNode(node, watch, createdMode);
+        }
 
     }
 
@@ -103,7 +105,6 @@ public class StateZookeeper implements Runnable{
         this.amiLeader = createdLeaderNodePath.equals(createdServerNode);
 
         // watch on leader node
-        // TODO: add if?
         this.zooKeeperWrapper.watchNode(createdLeaderNodePath);
 
         try {
@@ -123,19 +124,11 @@ public class StateZookeeper implements Runnable{
             final Event.EventType eventType = event.getType();
             if(Event.EventType.NodeDeleted.equals(eventType)) {
                 if(event.getPath().equalsIgnoreCase(createdLeaderNodePath)) {
-                    try {
-                        zooKeeperWrapper.deleteNode(createdServerNode);
-                    } catch (KeeperException | InterruptedException e) {
-                        e.printStackTrace();
-                    }
                     startLeaderElection();
                 }
             }
         }
     }
-
-
-
 
     @Override
     public void run() {
@@ -143,16 +136,6 @@ public class StateZookeeper implements Runnable{
         createStateNode();
         startLeaderElection();
     }
-
-
-//    public static void main(String[] args) throws IOException, InterruptedException {
-//        StateZookeeper s = new StateZookeeper("127.0.0.1:2181", 50000);
-//        s.run();
-////        while (true){
-////            TimeUnit.SECONDS.sleep(1);
-////        }
-//
-//    }
 
 }
 

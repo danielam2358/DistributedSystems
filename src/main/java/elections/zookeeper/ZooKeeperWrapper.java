@@ -57,7 +57,7 @@ public class ZooKeeperWrapper {
         List<String> childNodes = null;
 
         try {
-            childNodes = zooKeeper.getChildren(node, false); // TODO: should watcher be true?
+            childNodes = zooKeeper.getChildren(node, false);
         } catch (KeeperException | InterruptedException e) {
             throw new IllegalStateException(e);
         }

@@ -87,7 +87,7 @@ public class State {
                 onStopElection = () -> {
                         stateGrpcServer.stop();
                         stateGrpcClient.shutdown();
-                        stateZookeeper.stop();
+//                        stateZookeeper.stop();
                         stateRestServer.close();
                 };
 
@@ -102,9 +102,6 @@ public class State {
                 this.stateRmiServer = new StateRmiServer(rmiPort, onStartElection, onStopElection, onReportElectionCallback);
 
                 LOGGER.info(String.format("state %s: start rmi server on port %s", stateStr, rmiPort));
-
-                // TODO: delete
-//                onStartElection.callback();
         }
 
         private void startStateGrpcServer() throws IOException, InterruptedException {
@@ -215,17 +212,6 @@ public class State {
 
                 LOGGER.info(String.format("start %s servers.", stateStr));
 
-
-
-
-
-
-
-//                System.out.println(serversJson.getRandomGrpcPort(stateStr));
-//                System.out.println(serversJson.getRandomRestPort(stateStr));
-//                System.out.println(serversJson.getAllRmiPorts(stateStr));
-//                System.out.println(serversJson.getAllRestPorts(stateStr));
-//                System.out.println(serversJson.getAllGrpcPorts(stateStr));
     }
 
 }
