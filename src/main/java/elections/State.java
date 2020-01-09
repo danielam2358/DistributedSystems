@@ -214,7 +214,6 @@ public class State {
 
                 // server state is leader
                 if (stateZookeeper.AmiLeader()){
-                        votes.put(voterData.getId(), voterData);
                         spreadVote(voterData);
                 }
 
@@ -227,38 +226,26 @@ public class State {
         // update active replications in shard.
         private void spreadVote(VoterData voterData) throws KeeperException, InterruptedException {
 
-                LOGGER.info("0spreadVote" + grpcPort);
-
                 String createdNode = stateZookeeper.createCommitVoteNode(voterData);
-
-                LOGGER.info("1spreadVote" + grpcPort);
 
                 stateGrpcClientList.forEach(stateGrpcClient -> {
                         try {
-                                LOGGER.info("2spreadVote" + grpcPort + stateGrpcClient);
                                 stateGrpcClient.commitVote(voterData);
                         } catch (InterruptedException e) {
                                 e.printStackTrace();
                         }
                 });
 
-                LOGGER.info("3spreadVote" + grpcPort);
-
                 stateZookeeper.deleteCommitVoteNode(createdNode);
 
-                LOGGER.info("4spreadVote" + grpcPort);
+                votes.put(voterData.getId(), voterData);
         }
 
         // (not leader) get vote and wait for confirm from leader that vote can be count.
         private void getVoteCommit(VoterData voterData) throws KeeperException, InterruptedException {
 
-                LOGGER.info("0getVoteCommit");
-
                 stateZookeeper.waitForCommitVoteNode(voterData);
-
-                LOGGER.info("1getVoteCommit");
                 votes.put(voterData.getId(), voterData);
-                LOGGER.info("2getVoteCommit");
         }
 
 
