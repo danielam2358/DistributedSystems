@@ -15,4 +15,5 @@ message VoteReply {
 // The ballot service definition
 service Ballot {
     rpc Vote (VoteRequest) returns (VoteReply) {}
+    rpc commitVote (VoteRequest) returns (VoteReply) {}
 }

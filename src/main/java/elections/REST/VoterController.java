@@ -3,6 +3,8 @@ package elections.REST;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import org.apache.zookeeper.KeeperException;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,7 +34,11 @@ public class VoterController {
     @PostMapping("/voters")
     VoterData newVoter(@RequestBody VoterData newVoter) {
         voters.put(newVoter.getId(), newVoter);
-        handler.onVote(newVoter);
+        try {
+            handler.onVote(newVoter);
+        } catch (KeeperException | InterruptedException e) {
+            e.printStackTrace();
+        }
         return newVoter;
     }
 

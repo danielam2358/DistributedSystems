@@ -1,5 +1,6 @@
 package elections.zookeeper;
 
+import elections.REST.VoterData;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.WatchedEvent;
@@ -18,10 +19,14 @@ public class StateZookeeper implements Runnable{
     }
 
     private static final String ROOT_NODE = "/election";
+    private final static String LEADER_ELECTION_NODE = "/leader_election";
     private final static String LEADER_ELECTION_NODE_SUFFIX = "/state_number_";
+    private final static String COMMIT_VOTE_NODE = "/votes";
+    private final static String COMMIT_VOTE_NODE_SUFFIX = "/vote_";
 
     private final String stateNode;
     private final String leaderElectionNode;
+    private final String commitVotesNode;
 
     private ZooKeeperWrapper zooKeeperWrapper;
 
@@ -43,7 +48,8 @@ public class StateZookeeper implements Runnable{
     public StateZookeeper(String stateStr, String address, String connectString, int sessionTimeout,
                           OnLeaderElectionCallback onLeaderElectionCallback) throws IOException {
         stateNode = ROOT_NODE + "/" + stateStr;
-        leaderElectionNode = stateNode + LEADER_ELECTION_NODE_SUFFIX;
+        leaderElectionNode = stateNode + LEADER_ELECTION_NODE + LEADER_ELECTION_NODE_SUFFIX;
+        commitVotesNode = stateNode + COMMIT_VOTE_NODE + COMMIT_VOTE_NODE_SUFFIX;
         this.myAddress = address;
         this.onLeaderElectionCallback = onLeaderElectionCallback;
         this.zooKeeperWrapper = new ZooKeeperWrapper(connectString, sessionTimeout, new NodeDeleteWatcher());
@@ -57,18 +63,11 @@ public class StateZookeeper implements Runnable{
         return this.amiLeader;
     }
 
-    private void createRootNode(){
-        final String node = ROOT_NODE;
-        final boolean watch = false;
-        final CreateMode createdMode = CreateMode.PERSISTENT;
-        this.zooKeeperWrapper.createNode(node, watch, createdMode);
-    }
-
-    private void createStateNode(){
-        final String node = stateNode;
-        final boolean watch = false;
-        final CreateMode createdMode = CreateMode.PERSISTENT;
-        this.zooKeeperWrapper.createNode(node, watch, createdMode);
+    private void createRootsNode(){
+        this.zooKeeperWrapper.createNode(ROOT_NODE, false, CreateMode.PERSISTENT);
+        this.zooKeeperWrapper.createNode(stateNode, false, CreateMode.PERSISTENT);
+        this.zooKeeperWrapper.createNode(stateNode + LEADER_ELECTION_NODE, false, CreateMode.PERSISTENT);
+        this.zooKeeperWrapper.createNode(stateNode + COMMIT_VOTE_NODE, false, CreateMode.PERSISTENT);
     }
 
     private void createServerNode(){
@@ -81,6 +80,28 @@ public class StateZookeeper implements Runnable{
 
     }
 
+     public String createCommitVoteNode(VoterData voterData) {
+        final String node = commitVotesNode + voterData.getId() + voterData.getVote();
+        final boolean watch = false;
+        final CreateMode createdMode = CreateMode.EPHEMERAL;
+         return this.zooKeeperWrapper.createNode(node, watch, createdMode);
+    }
+
+    public void deleteCommitVoteNode(String node) throws KeeperException, InterruptedException {
+        this.zooKeeperWrapper.deleteNode(node);
+    }
+
+
+
+    public boolean waitForCommitVoteNode(VoterData voterData) throws KeeperException, InterruptedException {
+        final String node = commitVotesNode + voterData.getId() + voterData.getVote();
+
+        while (true) {
+                if (!this.zooKeeperWrapper.isNodeExist(node)) {
+                    return true;
+            }
+        }
+    }
 
 
     private void startLeaderElection(){
@@ -92,14 +113,14 @@ public class StateZookeeper implements Runnable{
         }
 
         // get all LEADER_ELECTION_NODE child nodes
-        final List<String> childNodePaths = this.zooKeeperWrapper.getChildren(stateNode);
+        final List<String> childNodePaths = this.zooKeeperWrapper.getChildren(stateNode + LEADER_ELECTION_NODE );
         System.out.println(childNodePaths);
 
         // sort by name
         Collections.sort(childNodePaths);
 
         // update createdLeaderNode
-        createdLeaderNodePath = stateNode + "/" + childNodePaths.get(0);
+        createdLeaderNodePath = stateNode + LEADER_ELECTION_NODE  + "/" + childNodePaths.get(0);
 
         // am i a leader?
         this.amiLeader = createdLeaderNodePath.equals(createdServerNode);
@@ -132,8 +153,7 @@ public class StateZookeeper implements Runnable{
 
     @Override
     public void run() {
-        createRootNode();
-        createStateNode();
+        createRootsNode();
         startLeaderElection();
     }
 

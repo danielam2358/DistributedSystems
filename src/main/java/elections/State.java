@@ -10,6 +10,7 @@ import elections.json.serversJson;
 import elections.json.votersJson;
 import elections.zookeeper.StateZookeeper;
 
+import org.apache.zookeeper.KeeperException;
 import org.json.simple.parser.ParseException;
 
 
@@ -43,6 +44,7 @@ public class State {
 
         // onGrpcVote callback injection
         private StateGrpcServer.OnGrpcVoteCallback onGrpcVote;
+        private StateGrpcServer.OnGrpcCommitVoteCallback onGrpcCommitVote;
 
         // onLeaderElection callback injection.
         private StateZookeeper.OnLeaderElectionCallback onLeaderElection;
@@ -60,6 +62,7 @@ public class State {
         private StateZookeeper stateZookeeper;
         private StateGrpcServer stateGrpcServer;
         private StateGrpcClient stateGrpcClient;
+        private List<StateGrpcClient> stateGrpcClientList;
 
         public State(String stateStr, String rmiPort, String restPort, String grpcPort) throws IOException, InterruptedException {
 
@@ -86,7 +89,18 @@ public class State {
 
                 onStopElection = () -> {
                         stateGrpcServer.stop();
-                        stateGrpcClient.shutdown();
+                        if(stateZookeeper.AmiLeader()){
+                                stateGrpcClientList.forEach(StateGrpcClient -> {
+                                        try {
+                                                StateGrpcClient.shutdown();
+                                        } catch (InterruptedException e) {
+                                                e.printStackTrace();
+                                        }
+                                });
+                        }
+                        else {
+                                stateGrpcClient.shutdown();
+                        }
                         stateZookeeper.stop();
                         stateRestServer.close();
                 };
@@ -106,11 +120,15 @@ public class State {
 
         private void startStateGrpcServer() throws IOException, InterruptedException {
 
+                // when leader get vote request
                 onGrpcVote = this::manageStateVote;
+
+                // when server (not leader) get commit vote request
+                onGrpcCommitVote = this::getVoteCommit;
 
                 // init State gRPC server.
                 this.stateGrpcServer = new StateGrpcServer();
-                stateGrpcServer.start(grpcPort, onGrpcVote);
+                stateGrpcServer.start(grpcPort, onGrpcVote, onGrpcCommitVote);
 
                 LOGGER.info(String.format("state %s: start gRPC server listening on port %s", stateStr, grpcPort));
 
@@ -118,8 +136,31 @@ public class State {
 
         private void startStateGrpcClient() throws IOException {
                 onLeaderElection = (leaderAddress) -> {
-                        this.stateGrpcClient = new StateGrpcClient("127.0.0.1", leaderAddress);
-                        LOGGER.info(String.format("state %s: start gRPC client on port %s", stateStr, leaderAddress));
+
+                        // im the leader!
+                        if(grpcPort.equals(leaderAddress)) {
+                                this.stateGrpcClient = null;
+
+                                List<String> grpcPorts = serversJson.getAllGrpcPorts(stateStr);
+
+                                stateGrpcClientList = new ArrayList<>();
+
+                                grpcPorts.forEach( (grpcPort) -> {
+                                        if(!grpcPort.equals(this.grpcPort)){
+                                                stateGrpcClientList.add(new StateGrpcClient("127.0.0.1", grpcPort));
+                                        }
+                                });
+
+                                LOGGER.info(String.format("state %s: start gRPC client on port %s", stateStr, leaderAddress));
+                        }
+
+                        // im not the leader!
+                        else {
+                                this.stateGrpcClient = new StateGrpcClient("127.0.0.1", leaderAddress);
+                                LOGGER.info(String.format("state %s: start gRPC client on port %s", stateStr, leaderAddress));
+                                stateGrpcClientList = null;
+                        }
+
                 };
 
         }
@@ -150,47 +191,74 @@ public class State {
 
 
         // get votes from rest server or from colleague state server.
-        private void manageStateVote(VoterData voter){
+        private void manageStateVote(VoterData voterData) throws KeeperException, InterruptedException {
 
-//                LOGGER.info(String.format("manageStateVote"));
                 LOGGER.info("manageStateVote");
 
                 // voter is not valid
-                if (!votersJson.isVoterValid(voter.getId(), voter.getState(), voter.getName())){
+                if (!votersJson.isVoterValid(voterData.getId(), voterData.getState(), voterData.getName())){
                         return;
                 }
 
                 // vote is not valid
-                if (!candidatesJson.isCandidateValid(voter.getState(), voter.getVote())){
+                if (!candidatesJson.isCandidateValid(voterData.getState(), voterData.getVote())){
                         return;
                 }
 
                 // voter not from this server state
-                if (!voter.getState().equals(stateStr)){
-                        String port = serversJson.getRandomGrpcPort(voter.getState());
+                if (!voterData.getState().equals(stateStr)){
+                        String port = serversJson.getRandomGrpcPort(voterData.getState());
                         StateGrpcClient grpClient = new StateGrpcClient(SERVER_ADDRESS, port);
-                        grpClient.vote(voter);
+                        grpClient.vote(voterData);
                 }
 
                 // server state is leader
                 if (stateZookeeper.AmiLeader()){
-                        votes.put(voter.getId(), voter);
-                        spreadVotes();
+                        votes.put(voterData.getId(), voterData);
+                        spreadVote(voterData);
                 }
 
                 // server state is not leader
                 else {
-                        this.stateGrpcClient.vote(voter);
+                        this.stateGrpcClient.vote(voterData);
                 }
         }
 
         // update active replications in shard.
-        private void spreadVotes(){
-                //TODO
+        private void spreadVote(VoterData voterData) throws KeeperException, InterruptedException {
 
-                List<String> colleagueGrpcStateServers = serversJson.getAllGrpcPorts(stateStr);
-                System.out.println(colleagueGrpcStateServers);
-                System.out.println(votes);
+                LOGGER.info("0spreadVote" + grpcPort);
+
+                String createdNode = stateZookeeper.createCommitVoteNode(voterData);
+
+                LOGGER.info("1spreadVote" + grpcPort);
+
+                stateGrpcClientList.forEach(stateGrpcClient -> {
+                        try {
+                                LOGGER.info("2spreadVote" + grpcPort + stateGrpcClient);
+                                stateGrpcClient.commitVote(voterData);
+                        } catch (InterruptedException e) {
+                                e.printStackTrace();
+                        }
+                });
+
+                LOGGER.info("3spreadVote" + grpcPort);
+
+                stateZookeeper.deleteCommitVoteNode(createdNode);
+
+                LOGGER.info("4spreadVote" + grpcPort);
+        }
+
+        // (not leader) get vote and wait for confirm from leader that vote can be count.
+        private void getVoteCommit(VoterData voterData) throws KeeperException, InterruptedException {
+
+                LOGGER.info("0getVoteCommit");
+
+                stateZookeeper.waitForCommitVoteNode(voterData);
+
+                LOGGER.info("1getVoteCommit");
+                votes.put(voterData.getId(), voterData);
+                LOGGER.info("2getVoteCommit");
         }
 
 

@@ -5,6 +5,7 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.stub.StreamObserver;
 
+import org.apache.zookeeper.KeeperException;
 import server.state.BallotGrpc;
 import server.state.StateGrpcProto;
 
@@ -16,10 +17,15 @@ public class StateGrpcServer {
 
     private Server server;
     private OnGrpcVoteCallback onGrpcVoteCallback;
+    private OnGrpcCommitVoteCallback onGrpcCommitVoteCallback;
 
 
     public interface OnGrpcVoteCallback {
-        void callback(VoterData newVoter);
+        void callback(VoterData newVoter) throws KeeperException, InterruptedException;
+    }
+
+    public interface OnGrpcCommitVoteCallback {
+        void callback(VoterData newVoter) throws KeeperException, InterruptedException;
     }
 
 
@@ -29,10 +35,40 @@ public class StateGrpcServer {
         @Override
         public void vote(StateGrpcProto.VoteRequest req, StreamObserver<StateGrpcProto.VoteReply> responseObserver) {
 
+            // build voterData from request.
             VoterData voterData = new VoterData(req.getId(), req.getName(), req.getState(), req.getVote());
-            onGrpcVoteCallback.callback(voterData);
+
+            // call onGrpcVoteCallback callback
+            try {
+                onGrpcVoteCallback.callback(voterData);
+            } catch (KeeperException | InterruptedException e) {
+                e.printStackTrace();
+            }
 
             StateGrpcProto.VoteReply reply = StateGrpcProto.VoteReply.newBuilder().build();
+            responseObserver.onNext(reply);
+            responseObserver.onCompleted();
+        }
+
+        @Override
+        public void commitVote(StateGrpcProto.VoteRequest req, StreamObserver<StateGrpcProto.VoteReply> responseObserver){
+
+            // build voterData from request.
+            VoterData voterData = new VoterData(req.getId(), req.getName(), req.getState(), req.getVote());
+
+            // call onGrpcCommitVoteCallback callback
+            try {
+                onGrpcCommitVoteCallback.callback(voterData);
+            } catch (KeeperException | InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            StateGrpcProto.VoteReply reply = StateGrpcProto
+                    .VoteReply
+                    .newBuilder()
+                    .setStatus(true)
+                    .build();
+
             responseObserver.onNext(reply);
             responseObserver.onCompleted();
         }
@@ -40,9 +76,10 @@ public class StateGrpcServer {
 
 
 
-    public void start(String grpcPort, OnGrpcVoteCallback onGrpcVoteCallback) throws IOException {
+    public void start(String grpcPort, OnGrpcVoteCallback onGrpcVoteCallback, OnGrpcCommitVoteCallback onGrpcCommitVoteCallback) throws IOException {
 
         this.onGrpcVoteCallback = onGrpcVoteCallback;
+        this.onGrpcCommitVoteCallback = onGrpcCommitVoteCallback;
         int port = Integer.parseInt(grpcPort);
 
         try {

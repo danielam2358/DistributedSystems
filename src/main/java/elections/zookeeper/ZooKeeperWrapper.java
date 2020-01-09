@@ -76,5 +76,11 @@ public class ZooKeeperWrapper {
     public void deleteNode(final String node) throws KeeperException, InterruptedException {
         zooKeeper.delete(node, -1);
     }
+
+    public boolean isNodeExist(final String node) throws KeeperException, InterruptedException {
+        return zooKeeper.exists(node, false) != null;
+    }
+
+
 }
 

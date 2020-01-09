@@ -1,5 +1,6 @@
 package elections.REST;
 
+import org.apache.zookeeper.KeeperException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
@@ -17,7 +18,7 @@ public class StateRestServer {
     private ConfigurableApplicationContext context;
 
     public interface OnRestVoteCallback {
-        void callback(VoterData newVoter);
+        void callback(VoterData newVoter) throws KeeperException, InterruptedException;
     }
 
     @Component
@@ -29,7 +30,7 @@ public class StateRestServer {
             this.onRestVoteCallback = onRestVoteCallback;
         }
 
-        void onVote(VoterData newVoter){
+        void onVote(VoterData newVoter) throws KeeperException, InterruptedException {
             this.onRestVoteCallback.callback(newVoter);
         }
 

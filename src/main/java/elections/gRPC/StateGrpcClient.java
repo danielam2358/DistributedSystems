@@ -13,6 +13,7 @@ public class StateGrpcClient {
 
     private ManagedChannel channel;
     private BallotGrpc.BallotBlockingStub blockingStub;
+    private BallotGrpc.BallotFutureStub futureStub;
 
     public StateGrpcClient(String host, String port) {
         this(ManagedChannelBuilder.forAddress(host, Integer.parseInt(port))
@@ -23,6 +24,7 @@ public class StateGrpcClient {
     public StateGrpcClient(ManagedChannel channel) {
         this.channel = channel;
         blockingStub = BallotGrpc.newBlockingStub(channel);
+        futureStub = BallotGrpc.newFutureStub(channel);
     }
 
     public void shutdown() throws InterruptedException {
@@ -41,5 +43,19 @@ public class StateGrpcClient {
 
         // vote
         blockingStub.vote(request);
+    }
+
+    public void commitVote(VoterData voterData) throws InterruptedException {
+
+        // build vote request.
+        StateGrpcProto.VoteRequest request = StateGrpcProto.VoteRequest.newBuilder()
+                .setId(voterData.getId())
+                .setName(voterData.getName())
+                .setState(voterData.getState())
+                .setVote(voterData.getVote())
+                .build();
+
+        // commit vote
+        futureStub.commitVote(request);
     }
 }

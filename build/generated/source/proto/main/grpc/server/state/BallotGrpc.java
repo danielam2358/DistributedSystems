@@ -61,6 +61,37 @@ public final class BallotGrpc {
     return getVoteMethod;
   }
 
+  private static volatile io.grpc.MethodDescriptor<server.state.StateGrpcProto.VoteRequest,
+      server.state.StateGrpcProto.VoteReply> getCommitVoteMethod;
+
+  @io.grpc.stub.annotations.RpcMethod(
+      fullMethodName = SERVICE_NAME + '/' + "commitVote",
+      requestType = server.state.StateGrpcProto.VoteRequest.class,
+      responseType = server.state.StateGrpcProto.VoteReply.class,
+      methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
+  public static io.grpc.MethodDescriptor<server.state.StateGrpcProto.VoteRequest,
+      server.state.StateGrpcProto.VoteReply> getCommitVoteMethod() {
+    io.grpc.MethodDescriptor<server.state.StateGrpcProto.VoteRequest, server.state.StateGrpcProto.VoteReply> getCommitVoteMethod;
+    if ((getCommitVoteMethod = BallotGrpc.getCommitVoteMethod) == null) {
+      synchronized (BallotGrpc.class) {
+        if ((getCommitVoteMethod = BallotGrpc.getCommitVoteMethod) == null) {
+          BallotGrpc.getCommitVoteMethod = getCommitVoteMethod =
+              io.grpc.MethodDescriptor.<server.state.StateGrpcProto.VoteRequest, server.state.StateGrpcProto.VoteReply>newBuilder()
+              .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
+              .setFullMethodName(generateFullMethodName(SERVICE_NAME, "commitVote"))
+              .setSampledToLocalTracing(true)
+              .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  server.state.StateGrpcProto.VoteRequest.getDefaultInstance()))
+              .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
+                  server.state.StateGrpcProto.VoteReply.getDefaultInstance()))
+              .setSchemaDescriptor(new BallotMethodDescriptorSupplier("commitVote"))
+              .build();
+        }
+      }
+    }
+    return getCommitVoteMethod;
+  }
+
   /**
    * Creates a new async stub that supports all call types for the service
    */
@@ -119,6 +150,13 @@ public final class BallotGrpc {
       asyncUnimplementedUnaryCall(getVoteMethod(), responseObserver);
     }
 
+    /**
+     */
+    public void commitVote(server.state.StateGrpcProto.VoteRequest request,
+        io.grpc.stub.StreamObserver<server.state.StateGrpcProto.VoteReply> responseObserver) {
+      asyncUnimplementedUnaryCall(getCommitVoteMethod(), responseObserver);
+    }
+
     @java.lang.Override public final io.grpc.ServerServiceDefinition bindService() {
       return io.grpc.ServerServiceDefinition.builder(getServiceDescriptor())
           .addMethod(
@@ -128,6 +166,13 @@ public final class BallotGrpc {
                 server.state.StateGrpcProto.VoteRequest,
                 server.state.StateGrpcProto.VoteReply>(
                   this, METHODID_VOTE)))
+          .addMethod(
+            getCommitVoteMethod(),
+            asyncUnaryCall(
+              new MethodHandlers<
+                server.state.StateGrpcProto.VoteRequest,
+                server.state.StateGrpcProto.VoteReply>(
+                  this, METHODID_COMMIT_VOTE)))
           .build();
     }
   }
@@ -156,6 +201,14 @@ public final class BallotGrpc {
       asyncUnaryCall(
           getChannel().newCall(getVoteMethod(), getCallOptions()), request, responseObserver);
     }
+
+    /**
+     */
+    public void commitVote(server.state.StateGrpcProto.VoteRequest request,
+        io.grpc.stub.StreamObserver<server.state.StateGrpcProto.VoteReply> responseObserver) {
+      asyncUnaryCall(
+          getChannel().newCall(getCommitVoteMethod(), getCallOptions()), request, responseObserver);
+    }
   }
 
   /**
@@ -180,6 +233,13 @@ public final class BallotGrpc {
     public server.state.StateGrpcProto.VoteReply vote(server.state.StateGrpcProto.VoteRequest request) {
       return blockingUnaryCall(
           getChannel(), getVoteMethod(), getCallOptions(), request);
+    }
+
+    /**
+     */
+    public server.state.StateGrpcProto.VoteReply commitVote(server.state.StateGrpcProto.VoteRequest request) {
+      return blockingUnaryCall(
+          getChannel(), getCommitVoteMethod(), getCallOptions(), request);
     }
   }
 
@@ -207,9 +267,18 @@ public final class BallotGrpc {
       return futureUnaryCall(
           getChannel().newCall(getVoteMethod(), getCallOptions()), request);
     }
+
+    /**
+     */
+    public com.google.common.util.concurrent.ListenableFuture<server.state.StateGrpcProto.VoteReply> commitVote(
+        server.state.StateGrpcProto.VoteRequest request) {
+      return futureUnaryCall(
+          getChannel().newCall(getCommitVoteMethod(), getCallOptions()), request);
+    }
   }
 
   private static final int METHODID_VOTE = 0;
+  private static final int METHODID_COMMIT_VOTE = 1;
 
   private static final class MethodHandlers<Req, Resp> implements
       io.grpc.stub.ServerCalls.UnaryMethod<Req, Resp>,
@@ -230,6 +299,10 @@ public final class BallotGrpc {
       switch (methodId) {
         case METHODID_VOTE:
           serviceImpl.vote((server.state.StateGrpcProto.VoteRequest) request,
+              (io.grpc.stub.StreamObserver<server.state.StateGrpcProto.VoteReply>) responseObserver);
+          break;
+        case METHODID_COMMIT_VOTE:
+          serviceImpl.commitVote((server.state.StateGrpcProto.VoteRequest) request,
               (io.grpc.stub.StreamObserver<server.state.StateGrpcProto.VoteReply>) responseObserver);
           break;
         default:
@@ -294,6 +367,7 @@ public final class BallotGrpc {
           serviceDescriptor = result = io.grpc.ServiceDescriptor.newBuilder(SERVICE_NAME)
               .setSchemaDescriptor(new BallotFileDescriptorSupplier())
               .addMethod(getVoteMethod())
+              .addMethod(getCommitVoteMethod())
               .build();
         }
       }

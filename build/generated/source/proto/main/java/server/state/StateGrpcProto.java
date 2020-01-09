@@ -1483,9 +1483,11 @@ public final class StateGrpcProto {
       "\n\024StateGrpcProto.proto\022\014server.state\"D\n\013" +
       "VoteRequest\022\n\n\002id\030\001 \001(\t\022\014\n\004name\030\002 \001(\t\022\r\n" +
       "\005state\030\003 \001(\t\022\014\n\004vote\030\004 \001(\t\"\033\n\tVoteReply\022" +
-      "\016\n\006status\030\001 \001(\0102F\n\006Ballot\022<\n\004Vote\022\031.serv" +
-      "er.state.VoteRequest\032\027.server.state.Vote" +
-      "Reply\"\000b\006proto3"
+      "\016\n\006status\030\001 \001(\0102\212\001\n\006Ballot\022<\n\004Vote\022\031.ser" +
+      "ver.state.VoteRequest\032\027.server.state.Vot" +
+      "eReply\"\000\022B\n\ncommitVote\022\031.server.state.Vo" +
+      "teRequest\032\027.server.state.VoteReply\"\000b\006pr" +
+      "oto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

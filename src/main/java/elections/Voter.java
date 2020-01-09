@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Scanner;
 
 public class Voter {
 
@@ -34,16 +35,22 @@ public class Voter {
     public static void main(String[] args) throws URISyntaxException {
 
         while (true){
+
+            Scanner scan = new Scanner(System.in);
+
             try {
 
                 VoterData voterData = votersJson.getRandomVoter();
-                String port = serversJson.getRandomRestPort(voterData.getState());
-                Vote(port, voterData);
-                System.out.println(voterData);
+                if(voterData.getState().equals("Kentucky")){
+                    String port = serversJson.getRandomRestPort(voterData.getState());
+                    Vote(port, voterData);
+                    System.out.println(voterData);
+                    System.out.println(port);
+                }
             }
 
             catch (Exception e){
-
+//                e.printStackTrace();
             }
         }
 
