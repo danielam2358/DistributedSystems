@@ -36,21 +36,15 @@ public class Voter {
 
         while (true){
 
-            Scanner scan = new Scanner(System.in);
-
             try {
-
                 VoterData voterData = votersJson.getRandomVoter();
-                if(voterData.getState().equals("Kentucky")){
-                    String port = serversJson.getRandomRestPort(voterData.getState());
-                    Vote(port, voterData);
-                    System.out.println(voterData);
-                    System.out.println(port);
-                }
+                String port = serversJson.getRandomRestPort(voterData.getState());
+                Vote(port, voterData);
+                System.out.println(voterData);
+                System.out.println(port);
             }
-
             catch (Exception e){
-//                e.printStackTrace();
+                e.printStackTrace();
             }
         }
 

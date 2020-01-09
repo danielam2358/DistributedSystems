@@ -252,19 +252,12 @@ public class State {
 
         public static void main(String[] args) throws IOException, InterruptedException, ParseException {
 
-                String stateStr = "Kentucky";
+                String stateStr = args[0];
+                String rmiPort = args[1];
+                String restPort = args[2];
+                String grpcPort = args[3];
 
-                List<String> rmiPorts = serversJson.getAllRmiPorts(stateStr);
-                List<String> restPorts = serversJson.getAllRestPorts(stateStr);
-                List<String> grpcPorts = serversJson.getAllGrpcPorts(stateStr);
-
-                for(int i = 0; i< rmiPorts.size(); i++){
-                        String rmiPort = rmiPorts.get(i);
-                        String restPort = restPorts.get(i);
-                        String grpcPort = grpcPorts.get(i);
-                        State state = new State(stateStr, rmiPort, restPort, grpcPort);
-                }
-
+                new State(stateStr, rmiPort, restPort, grpcPort);
                 LOGGER.info(String.format("start %s servers.", stateStr));
 
     }

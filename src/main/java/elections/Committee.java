@@ -21,6 +21,9 @@ public class Committee {
     private static CommitteeStateRmiInterface look_up;
 
     private static HashMap<String, List<CommitteeStateRmiInterface>> lookupMap = new HashMap<>();
+    private static ArrayList<Process> processPoolStates;
+    private static ArrayList<Process> processPoolVotes = new ArrayList<>();
+
 
     private static CommitteeStateRmiInterface serverLookupInit(String port){
         String name = "StateRmiServer";
@@ -119,8 +122,47 @@ public class Committee {
         });
     }
 
+    private static void startVotes() throws IOException {
+        String cmd = "java -jar ./out/artifacts/voter_jar/ELECTIONS.jar";
+        processPoolVotes.add(Runtime.getRuntime().exec(cmd));
+    }
+
+    private static void stopVotes() throws IOException {
+        processPoolVotes.forEach(Process::destroy);
+    }
+
+    private static void startServers(){
+        processPoolStates = new ArrayList<>();
+
+        Config.statesString.forEach( stateStr -> {
+
+            System.out.println(String.format("start %s servers.", stateStr));
+
+            List<String> rmiPorts = serversJson.getAllRmiPorts(stateStr);
+            List<String> restPorts = serversJson.getAllRestPorts(stateStr);
+            List<String> grpcPorts = serversJson.getAllGrpcPorts(stateStr);
+
+            for(int i = 0; i< rmiPorts.size(); i++) {
+                String rmiPort = rmiPorts.get(i);
+                String restPort = restPorts.get(i);
+                String grpcPort = grpcPorts.get(i);
+
+                String baseCmd = "java -jar ./out/artifacts/state_jar/ELECTIONS.jar";
+                String cmd = baseCmd + String.format(" %s %s %s %s", stateStr, rmiPort, restPort, grpcPort);
+
+                try {
+                    processPoolStates.add(Runtime.getRuntime().exec(cmd));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+    }
+
 
     private static void init(){
+        startServers();
         Config.statesString.forEach(Committee::stateLookupInit);
     }
 
@@ -159,7 +201,9 @@ public class Committee {
         boolean serversUp = false;
         String cmd = "";
 
-        System.out.println("commands: init, start, stop, report, quit, down");
+        String helpMessage = "commands: init, start, stop, report, quit, down, startV, stopV";
+
+        System.out.println(helpMessage);
 
         while (!cmd.equals("quit")){
             cmd = scan.next();
@@ -181,6 +225,14 @@ public class Committee {
                         serversUp = false;
                         stop();
                 }
+
+                case "startV": {
+                        startVotes();
+                }
+
+                case "stopV": {
+                        stopVotes();
+                }
                     break;
 
                 case "report": {
@@ -197,7 +249,7 @@ public class Committee {
                     break;
 
                 default:
-                    System.out.println("commands: start, stop, report, quit");
+                    System.out.println(helpMessage);
             }
         }
 
@@ -206,6 +258,8 @@ public class Committee {
         if (serversUp){
             stop();
         }
+
+        processPoolStates.forEach(Process::destroy);
 
     }
 }
