@@ -53,6 +53,7 @@ public class State {
         private StateRmiServer.OnStartElectionCallback onStartElection;
         private StateRmiServer.OnStopElectionCallback onStopElection;
         private StateRmiServer.OnReportElectionCallback onReportElectionCallback;
+        private StateRmiServer.OnTerminateElectionCallback onTerminateElectionCallback;
 
 
 
@@ -112,8 +113,17 @@ public class State {
                         return null;
                 };
 
+                onTerminateElectionCallback = () -> {
+                        System.exit(0);
+                };
+
                 // init RMI server
-                this.stateRmiServer = new StateRmiServer(rmiPort, onStartElection, onStopElection, onReportElectionCallback);
+                this.stateRmiServer = new StateRmiServer(rmiPort,
+                        onStartElection,
+                        onStopElection,
+                        onReportElectionCallback,
+                        onTerminateElectionCallback
+                        );
 
                 LOGGER.info(String.format("state %s: start rmi server on port %s", stateStr, rmiPort));
         }

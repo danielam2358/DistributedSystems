@@ -22,7 +22,12 @@ public class StateRmiServer extends UnicastRemoteObject  implements CommitteeSta
     }
 
     public interface OnReportElectionCallback {
+
         List<VoterData> callback();
+    }
+
+    public interface OnTerminateElectionCallback {
+        void callback() throws InterruptedException;
     }
 
     private String port;
@@ -30,14 +35,15 @@ public class StateRmiServer extends UnicastRemoteObject  implements CommitteeSta
     private OnStartElectionCallback onStartElection;
     private OnStopElectionCallback onStopElection;
     private OnReportElectionCallback onReportElectionCallback;
+    private OnTerminateElectionCallback onTerminateElectionCallback;
 
 
     public StateRmiServer(
             String rmiPort,
             OnStartElectionCallback onStartElection,
             OnStopElectionCallback onStopElection,
-            OnReportElectionCallback onReportElectionCallback
-            )
+            OnReportElectionCallback onReportElectionCallback,
+            OnTerminateElectionCallback onTerminateElectionCallback)
             throws RemoteException {
         super();
 
@@ -45,6 +51,7 @@ public class StateRmiServer extends UnicastRemoteObject  implements CommitteeSta
         this.onStartElection = onStartElection;
         this.onStopElection = onStopElection;
         this.onReportElectionCallback = onReportElectionCallback;
+        this.onTerminateElectionCallback = onTerminateElectionCallback;
 
         String name = "StateRmiServer";
         Registry registry = LocateRegistry.createRegistry(Integer.parseInt(rmiPort));
@@ -69,4 +76,9 @@ public class StateRmiServer extends UnicastRemoteObject  implements CommitteeSta
         return onReportElectionCallback.callback();
     }
 
+    @Override
+    public void terminateElection() throws RemoteException, InterruptedException {
+        System.out.println("Terminate Election port " + port);
+        onReportElectionCallback.callback();
+    }
 }

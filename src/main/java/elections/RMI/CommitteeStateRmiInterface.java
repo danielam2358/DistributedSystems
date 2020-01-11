@@ -14,4 +14,6 @@ public interface CommitteeStateRmiInterface extends Remote{
     public void stopElection() throws RemoteException, InterruptedException;
 
     public List<VoterData> getElectionStatus() throws RemoteException;
+
+    public void terminateElection() throws RemoteException, InterruptedException;
 }

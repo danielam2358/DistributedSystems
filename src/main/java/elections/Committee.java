@@ -12,6 +12,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.util.Collections.max;
@@ -123,8 +124,9 @@ public class Committee {
     }
 
     private static void startVotes() throws IOException {
-        String cmd = "java -jar ./out/artifacts/voter_jar/ELECTIONS.jar";
+        String cmd = "java -jar /home/daniel/Programming/DistributedSystems/out/artifacts/voter_jar/ELECTIONS.jar";
         processPoolVotes.add(Runtime.getRuntime().exec(cmd));
+
     }
 
     private static void stopVotes() throws IOException {
@@ -161,8 +163,9 @@ public class Committee {
     }
 
 
-    private static void init(){
+    private static void init() throws InterruptedException {
         startServers();
+        TimeUnit.SECONDS.sleep(5);
         Config.statesString.forEach(Committee::stateLookupInit);
     }
 
@@ -212,38 +215,40 @@ public class Committee {
 
                 case "init": {
                     init();
+                    break;
                 }
-                break;
 
                 case "start": {
-                        serversUp = true;
-                        start();
-                }
+                    serversUp = true;
+                    start();
                     break;
+                }
 
                 case "stop": {
-                        serversUp = false;
-                        stop();
+                    serversUp = false;
+                    stop();
+                    break;
                 }
 
                 case "startV": {
-                        startVotes();
+                    startVotes();
+                    break;
                 }
 
                 case "stopV": {
-                        stopVotes();
-                }
+                    stopVotes();
                     break;
+                }
 
                 case "report": {
                     report();
-                }
                     break;
+                }
 
                 case "down":{
                     downServer();
-                }
                     break;
+                }
 
                 case "quit":
                     break;
@@ -259,6 +264,13 @@ public class Committee {
             stop();
         }
 
+        lookupMap.values().forEach(stateLookupList -> stateLookupList.forEach( server -> {
+            try {
+                server.terminateElection();
+            } catch (RemoteException | InterruptedException e) {
+                e.printStackTrace();
+            }
+        }));
         processPoolStates.forEach(Process::destroy);
 
     }

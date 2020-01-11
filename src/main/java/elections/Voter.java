@@ -44,7 +44,7 @@ public class Voter {
                 System.out.println(port);
             }
             catch (Exception e){
-                e.printStackTrace();
+//                e.printStackTrace();
             }
         }
 
